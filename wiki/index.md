@@ -5,7 +5,7 @@ updated: 2026-07-24
 status: current
 tags:
   - wiki/index
-source_count: 0
+source_count: 1
 ---
 
 # Wiki Index
@@ -18,15 +18,16 @@ Read this page first. It is the complete catalog of generated knowledge.
 
 ## Sources
 
-_No sources ingested yet._
+- [[wiki/sources/SRC-20260724-connections-registry|SRC-20260724-connections-registry]] — AIOS connections registry: 7 business domains, all unconnected as of 2026-07-24.
 
 ## Entities
 
-_No entity pages yet._
+- [[wiki/entities/auretris|Auretris]] — WhatsApp bot handler for customer interactions, not yet connected.
+- [[wiki/entities/kuanli|Kuanli]] — WhatsApp CRM intended for task tracking, not yet connected.
 
 ## Concepts
 
-_No concept pages yet._
+- [[wiki/concepts/lead-management-automation|Lead management automation]] — the combined effort to automate WhatsApp lead handling via Auretris + Kuanli.
 
 ## Analyses
 
