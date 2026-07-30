@@ -1,0 +1,7 @@
+# Safe defaults for direct interactive Codex use in this trusted project.
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+web_search = "cached"
+
+[sandbox_workspace_write]
+network_access = false

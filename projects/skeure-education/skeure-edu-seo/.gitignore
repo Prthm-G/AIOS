@@ -1,0 +1,4 @@
+.bridge/runs/
+.bridge/write.lock
+*.tmp
+*.log

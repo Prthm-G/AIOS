@@ -6,3 +6,15 @@ __pycache__/
 node_modules/
 .claude/settings.local.json
 audits/
+website-build/
+projects/skeure-education/ad-manager/
+
+# large local checkouts / tools, not AIOS content
+codex-desktop-linux/
+codex-headless/
+claude-config/
+
+# editor/sync-tool local state
+.obsidian/
+.stfolder/
+.stignore

@@ -1,0 +1,25 @@
+old_url,page_type,source,notes
+https://degreecraft.com/,homepage,sitemap.xml + nav crawl,
+https://degreecraft.com/universities,listing,sitemap.xml + nav crawl,
+https://degreecraft.com/courses,listing,sitemap.xml + nav crawl,No dedicated financing/loans page on the old site; loan info was folded into /contact
+https://degreecraft.com/about,static,sitemap.xml + nav crawl,
+https://degreecraft.com/contact,static,sitemap.xml + nav crawl,
+https://degreecraft.com/blog,listing,sitemap.xml + nav crawl,
+https://degreecraft.com/blog/top-skills-online-courses-2024,article,sitemap.xml,
+https://degreecraft.com/blog/online-learning-vs-traditional-classrooms,article,sitemap.xml,
+https://degreecraft.com/blog/self-paced-learning-why-it-works,article,sitemap.xml,
+https://degreecraft.com/blog/role-of-technology-in-modern-education,article,sitemap.xml,
+https://degreecraft.com/universities/lovely-professional-university,university profile,sitemap.xml,
+https://degreecraft.com/universities/manipal-university,university profile,sitemap.xml,Old site also presented this as a single "Manipal University" entity — same conflation risk carried forward and now caught on the new site
+https://degreecraft.com/universities/amity-university,university profile,sitemap.xml,
+https://degreecraft.com/universities/chandigarh-university,university profile,sitemap.xml,
+https://degreecraft.com/universities/chitkara-university,university profile,sitemap.xml,
+https://degreecraft.com/universities/desh-bhagat-university,university profile,sitemap.xml,
+https://degreecraft.com/universities/gla-university,university profile,sitemap.xml,
+https://degreecraft.com/universities/guru-kashi-university,university profile,sitemap.xml,
+https://degreecraft.com/universities/jagat-guru-nanak-university,university profile,sitemap.xml,
+https://degreecraft.com/universities/mangalayatan-university,university profile,sitemap.xml,
+https://degreecraft.com/universities/mmu-university,university profile,sitemap.xml,
+https://degreecraft.com/universities/punjabi-university,university profile,sitemap.xml,
+(none — footer link is a bare "#" anchor),legal,nav crawl,"Privacy Policy footer link never pointed anywhere real, no legacy URL to preserve or redirect"
+(none — footer link is a bare "#" anchor),legal,nav crawl,"Terms of Service footer link never pointed anywhere real, no legacy URL to preserve or redirect"
