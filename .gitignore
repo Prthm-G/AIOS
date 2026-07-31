@@ -18,3 +18,9 @@ claude-config/
 .obsidian/
 .stfolder/
 .stignore
+
+# real NBFC financial data (DB schema, Firebase config, source export) —
+# never belongs in this public fork's history. Syncthing keeps this path
+# populated locally; this entry is what actually keeps it out of git
+# regardless of that, since a plain file move doesn't stick against sync.
+projects/skeure-finance/

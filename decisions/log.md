@@ -29,3 +29,23 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 **Alternatives considered:** Cloud routine via `/schedule` (rejected — wrong data, operates on the GitHub remote's clone, not local disk). No automation, manual commits only (rejected per explicit request).
 
 **Owner:** Pratham. Scope is the AIOS root repo only — `ad-manager/` and `website-build/` are independently git-managed and are committed manually/explicitly during working sessions, not by this job. Change the cron time by editing the crontab entry directly (`crontab -e`) if 11:30pm IST isn't the right "end of day."
+
+## 2026-07-31 — Auretris/wacrm stabilization: real blocker was a Meta token restriction, not "coexistence"
+
+**Decision:** Audited `/home/user/automation_stack` (Auretris/wacrm/n8n/Supabase stack), fixed the actual cause of new-client WhatsApp onboarding failing (a Meta-blocked system-user token — owner regenerated it and it now verifies valid), deduped conflicting `.env` values, scrubbed leaked secrets, and created `projects/skeure-education/auretris/` as a docs-only knowledge base (no app code migrated). Full detail and rationale in [`projects/skeure-education/auretris/decisions/log.md`](../projects/skeure-education/auretris/decisions/log.md).
+
+**Why:** "WhatsApp coexistence" was the wrong frame — that feature was deliberately removed from the codebase. The real blocker was upstream, at Meta's API layer.
+
+**Alternatives considered:** Full rebuild (replace n8n, replace `wacrm` with a custom CRM, buy Claude Max/Cursor) — evaluated and deferred; see the linked local log for the full comparison.
+
+**Owner:** Pratham.
+
+## 2026-07-31 — Corrected wacrm/marketing-site mix-up; separated the real auretris-site
+
+**Decision:** The docs-only knowledge base created earlier the same day had documented a mistake it didn't yet know about: a session had built the `auretris.prathamgoel.com` marketing site directly inside `automation_stack/wacrm` (the production CRM) instead of a new sibling folder, and had also left wacrm's WhatsApp-onboarding routes on the deprecated Embedded Signup v2. Both fixed: wacrm restored to CRM-only, onboarding routes removed (v4 rebuild is future work), marketing/design files moved into a new standalone `automation_stack/auretris-site`. Full detail in [`projects/skeure-education/auretris/decisions/log.md`](../projects/skeure-education/auretris/decisions/log.md).
+
+**Why:** User caught that the prior session's output didn't match what was asked, and wanted wacrm's onboarding approach reconsidered given Meta's Oct 15, 2026 v2 deprecation.
+
+**Alternatives considered:** None — this was a direct correction of a specific, identified mistake, not an open design choice.
+
+**Owner:** Pratham.
