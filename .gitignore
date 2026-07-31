@@ -24,3 +24,6 @@ claude-config/
 # populated locally; this entry is what actually keeps it out of git
 # regardless of that, since a plain file move doesn't stick against sync.
 projects/skeure-finance/
+
+# daily-commit-and-push.sh's own log, never committed
+.auto-commit.log
