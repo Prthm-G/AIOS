@@ -9,6 +9,10 @@ audits/
 website-build/
 projects/skeure-education/ad-manager/
 
+# manus is its own git repo (multi-tenant WhatsApp platform, node_modules +
+# generated seed manifests would otherwise flood the AIOS root repo)
+projects/manus/
+
 # large local checkouts / tools, not AIOS content
 codex-desktop-linux/
 codex-headless/

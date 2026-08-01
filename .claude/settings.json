@@ -1,5 +1,6 @@
 {
   "enabledPlugins": {
-    "claude-ads@ai-marketing-hub-claude-ads": true
+    "claude-ads@ai-marketing-hub-claude-ads": true,
+    "fullstack-dev-skills@fullstack-dev-skills": true
   }
 }
