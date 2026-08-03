@@ -13,11 +13,12 @@ Read `references/3ms-framework.md` once. It's how Pratham thinks about AI work. 
 - `/onboard` — already run if you're seeing this filled in. Re-run any time to refresh from an edited `aios-intake.md`.
 - `/audit` — Four-Cs gap report. Run on Day 7, then weekly. Watch your score climb.
 - `/level-up` — Weekly 3Ms interview. Find one automation, scope it, ship it. One per week.
+- `/lead-qualifier` — paste a WhatsApp lead thread, get a fit verdict (Hot/Warm/Cold), a reply draft in your voice, and a next-action line. Never sends anything itself. Adapted from `ComposioHQ/awesome-claude-skills`' `lead-research-assistant`.
 
 ## Where things live
 
 - `context/` — about you, your business, your priorities (filled by `/onboard`)
-- `references/` — frameworks, voice samples, API guides as you connect tools
+- `references/` — frameworks, voice samples, API guides as you connect tools (includes `references/prompt-engineering-guide.md` — few-shot/RAG/prompt-chaining techniques distilled for Auretris and the FAQ DB)
 - `connections.md` — registry of every system your AIOS can reach
 - `decisions/log.md` — append-only record of decisions and why
 - `archives/` — old stuff. Don't delete. Move here.
@@ -43,6 +44,15 @@ Observed register (from WhatsApp lead samples): warm and helpful, structured wit
 ## Connections
 
 7 domains mapped from intake, none wired yet (Day 2 task): revenue tracking is ad hoc across per-university bank accounts; customer comms run through WhatsApp (Auretris) and phone; calendar tool unconfirmed; university-facing communication is email; task tracking has no formal home yet (Kuanli, once live, is the intended fit); no meeting-recording tool; files split across `/home/user/automation_stack/brochures`, a PostgreSQL FAQ database, and a local office server. Full detail in `connections.md`.
+
+## External tooling watchlist
+
+Reviewed 2026-08-03 against a request to integrate 4 external repos. Two adopted, two deferred pending your call — don't install the deferred two without asking again first, even if they come up in a later session.
+
+- **Adopted — `dair-ai/Prompt-Engineering-Guide`**: pure docs (MIT), no install. Distilled into `references/prompt-engineering-guide.md`.
+- **Adopted — one skill from `ComposioHQ/awesome-claude-skills`**: cherry-picked `lead-research-assistant` and rewrote it as `/lead-qualifier` for inbound admissions leads (see `.claude/skills/lead-qualifier/`). The rest of that repo (1000+ skills) is a browsable catalog, not something to bulk-install — pull individual `SKILL.md` files as specific needs come up, same as this one.
+- **Deferred — `affaan-m/ECC`**: a large multi-agent Claude Code harness (67 agents, 281 skills, hooks, global plugin-marketplace install). The 237k-star count first looked anomalous (higher than the Linux kernel's after 15 years, on a repo that's ~7 months old) — dug deeper on 2026-08-03 and it checks out as real: 100+ active contributors, continuous commit activity, forks landing within the hour, a legitimate npm maintainer identity, no sneaky install hooks, and independent third-party coverage (DataCamp, TechTimes, trendshift.io). Not a supply-chain lure. Still deferred, but for a different reason: it's a *global* Claude Code plugin that would affect every project on this machine, not just this one, and it runs directly against this kit's "ships lean, not a hoarder's basement" philosophy (`EXPANSIONS.md`) — a scope/fit call on a machine holding live Meta/WhatsApp tokens, not a trust call. If you want it, `--profile minimal` on a throwaway project first is the lower-risk path. See `decisions/log.md` for the full trail.
+- **Deferred — `Graphify-Labs/graphify`**: turns a codebase/docs/PDFs/SQL schemas into a local knowledge graph — plausible fit for organizing the FAQ DB + brochures folder. Also flagged: its org is 5 weeks old yet the repo already shows 101k stars, and the tool registers itself into your AI assistant plus offers an opt-in hosted SaaS (`app.graphify.com`) that would take data off-machine if enabled. Worth a second look later, but don't install without vetting given the data involved (admissions/student info).
 
 ## How you work with me
 
