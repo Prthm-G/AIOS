@@ -1,4 +1,4 @@
-# AIS-OS — AI Operating System starter kit for Claude Code
+# AIOS — AI Operating System starter kit for Claude Code
 
 A free, MIT-licensed starter kit that turns Claude Code into your personal **AI Operating System (AIOS)**. Audience: anyone building automations — solopreneurs, small business operators, managers, creators, AI consultants. Pairs with a companion masterclass video.
 
