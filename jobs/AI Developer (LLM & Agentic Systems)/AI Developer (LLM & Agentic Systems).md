@@ -1,0 +1,124 @@
+---
+title: AI Developer (LLM & Agentic Systems)
+source: https://emit.fa.ca3.oraclecloud.com/hcmUI/CandidateExperience/fr-CA/sites/CX_2001/job/91916?utm_medium=jobshare
+author:
+published:
+created: 2026-08-07
+description: Unlock potential.
+tags:
+  - jobs
+---
+Toronto, ON, Canada  
+Calgary, AB, Canada  
+Vancouver, BC, Canada
+
+## Job Description
+
+## What if you could redefine what's possible?
+
+With us, you can. You want Purpose. Growth. Opportunity. People who get it.  
+We are the home of ambitious, passionate, and innovative world shapers.  
+With an unmatched breadth and depth of engineering, advisory and science-based expertise, our global minds unite to power local solutions.  
+We are pathfinders and impact makers.  
+We are Visioneers.  
+We are WSP.
+
+#GlobalMining
+
+---
+
+## The Opportunity
+
+**Build the future with us.**  
+As an AI Developer (LLM & Agentic Systems), you will design and develop AI-enabled applications and intelligent systems used in client-facing projects, supporting decision-making across mining, resources, infrastructure, and environmental domains. You will build next-generation AI applications that combine Large Language Models (LLMs), structured data, and domain knowledge to enable advanced reasoning and support complex engineering and operational decisions. This role can be based anywhere in Canada and plays a key part in advancing our AI‑enabled platforms, internal tooling, and next‑generation data solutions.
+
+#GlobalMining #ERI\_Opportunities #ERI\_Careers
+
+---
+
+## Your Impact
+
+- Design, build, and maintain scalable full‑stack applications that integrate advanced AI and data capabilities.
+- Develop backend APIs and cloud‑native components that support scalable data and analytics workflows.
+- Integrate LLMs, agentic workflows, and NLP techniques (eg, entity recognition and entity resolution) into production-ready systems.
+- Contribute to the design and evolution of knowledge‑based and data‑driven platforms.
+- Develop and integrate data pipelines and knowledge-driven components (eg, structured data, semantic layers, or knowledge graphs) into applications.
+- Collaborate closely with analytics, data science, knowledge engineering, and digital product teams.
+- Work directly with internal teams and clients to translate requirements into scalable, production-ready solutions.
+- Implement secure, maintainable, and testable code aligned with industry best practices.
+- CI/CD support, Git workflows, and DevOps automation.
+
+---
+
+## The Skills That Set You Apart
+
+- Bachelor's or Master's degree in Computer Science, Software Engineering, or a related discipline.
+- 5+ years of professional software development experience, including 2+ years leading the design, deployment, and scaling of LLM-based or agentic AI systems in production environments.
+- Demonstrated experience designing end-to-end AI architectures, including data ingestion, retrieval, reasoning layers, and user-facing applications.
+- Strong experience with LLM workflows, including prompt engineering, evaluation strategies, agent orchestration, and tool integration.
+- Hands-on experience with embeddings, vector search, and RAG pipelines, including performance optimization and retrieval quality improvements.
+- Proven ability to design and build scalable backend systems and APIs (Python – FastAPI preferred, or Node.js), including microservices architectures.
+- Experience integrating structured and unstructured data into scalable AI applications.
+- Experience applying NLP techniques (eg, entity extraction, entity resolution) in real-world applications.
+- Strong experience with cloud-native development (Azure preferred), including deployment, monitoring, and cost/performance optimization.
+- Experience with DevOps practices, including CI/CD pipelines, Git workflows, and multi-environment deployments (dev, UAT, production).
+- Nice to have: Experience with knowledge graphs and graph query languages (eg, SPARQL, Cypher), microservices, Docker/Kubernetes, ETL pipelines, or engineering‑heavy data environments.
+
+---
+
+## Why Choose WSP?
+
+We exist to shape communities to advance humanity. The brightest engineers, advisors and scientists from across the globe call WSP home.  
+• **Proudly Canadian** – we are a Top 100 Employer in Canada for 2026.  
+• **A global community of brilliant minds** – your next idea, mentor, or opportunity is always within reach.  
+• **Limitless opportunities start here.** Whether it's across the country or around the globe, we help you tailor your role to match your ambition — because your growth drives us.  
+• **Flexible work, real balance** – we recognize the importance of balance in our lives and encourage you to prioritize the balance in yours.  
+**#WeAreWSP**
+
+---
+
+## Compensation
+
+**AB, BC, NT, NU, SK & YT:** $104,100 – $138,000
+
+**MB & ON:** $95,5000 – $130,800
+
+**NB, NL, NS, PEI & QC:** $94,100 – $124,900
+
+**Disclosure:**  
+The final salary awarded for this role may vary from the above range based on several factors including, but not limited to, relevant education, qualifications, certifications, experience, skills, seniority, geographic location, performance, and business or organizational needs. The wage range provided in this job posting may be subject to change for business purposes.
+
+---
+
+## Make Your Mark with WSP
+
+If you're ready to shape the future of AI‑enabled platforms and build digital tools that make a real impact, we'd love to hear from you. Apply today and help redefine what's possible.
+
+## Job Info
+
+- Job Identification 91916
+- Posting Date 2026-07-25, 04:00 am
+
+## About Us
+
+At **WSP**, we exist to shape communities to advance humanity.  
+  
+It's why we bring people together who are wired to solve complex challenges - engineers, scientists, advisors, and technical experts who are driven by a common passion - to redefine what's possible and shape what comes next. We are Visioneers.  
+  
+As one of the world's leading professional services firms, we partner with clients across transportation, infrastructure, environment, buildings, energy, water, mining and metals. We pair deep local knowledge with global insights to pioneer solutions designed to leave a lasting, positive impact.  
+  
+At **WSP**, you'll join a community of brilliant minds that push boundaries every day - applying deep expertise and fueling innovation to help create a more connected and resilient future. Here, your ideas are valued, your growth is supported, and you are encouraged to bring your authentic self to work. We empower our people to collaborate across disciplines, challenge the status quo, and shape a career with purpose.  
+  
+Join us.  
+  
+*Please Note:  
+  
+Health and Safety is a core paramount value of WSP. Given the importance of keeping one another safe it is expected that you comply with our Health, Safety & Environment (HSE) policy at all times as well as client HSE policies when working at client locations. Full details [here](https://www.wsp.com/en-ca/corporate/ca/health-safety).  
+  
+Some safety-sensitive positions involve fieldwork and may include working in a variety of environmental conditions, such as remote or isolated areas, working alone, and in inclement weather (within safe and reasonable limits).  
+  
+WSP welcomes and encourages applications from people with disabilities. Accommodations are available on request for candidates taking part in all aspects of the selection process.  
+  
+WSP is committed to the principles of employment equity. Only the selected candidates will be contacted.  
+  
+WSP does not accept unsolicited resumes from agencies. Full details [here](https://www.wsp.com/en-ca/careers/notice-to-staffing-agencies).*
