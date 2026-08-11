@@ -1,12 +1,12 @@
 ---
-title: "AI Automation & Operations Engineer"
-source: "https://www.aventyrsecurity.com/jobs/ai-automation-operations-engineer-13"
+title: AI Automation & Operations Engineer
+source: https://www.aventyrsecurity.com/jobs/ai-automation-operations-engineer-13
 author:
 published:
 created: 2026-08-10
 description:
 tags:
-  - "clippings"
+  - clippings
 ---
 ##### Surrey, BC, Canada
 
