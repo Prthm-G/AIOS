@@ -51,11 +51,18 @@ export default function UniversitiesPage() {
             University profiles are being added, chat with us on WhatsApp for the full list in the meantime.
           </p>
         ) : (
-          <div data-reveal-group className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {universities.map((u) => (
-              <UniversityCard key={u.id} university={u} />
-            ))}
-          </div>
+          <>
+            {/* Cards are <h3> because on the homepage they sit under a visible <h2>
+                section heading. Here they follow the page <h1> directly, which skips a
+                level. This names the grid for screen readers and restores the order;
+                it is visually redundant with the page title, hence sr-only. */}
+            <h2 className="sr-only">Partner universities</h2>
+            <div data-reveal-group className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {universities.map((u) => (
+                <UniversityCard key={u.id} university={u} />
+              ))}
+            </div>
+          </>
         )}
       </section>
     </>

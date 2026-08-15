@@ -77,6 +77,17 @@ export const campusImages: Record<string, CampusImage> = {
 		isOfficial: true,
 		retrievedAt: "2026-07-25",
 	},
+	"mmu-university-online": {
+		src: "/campus/mmu.jpg",
+		alt: "The main building at Maharishi Markandeshwar University, Mullana-Ambala",
+		provenance: "Wikimedia Commons, File:Maharishi Markandeshwar University, Mullana.jpg",
+		isOfficial: false,
+		retrievedAt: "2026-08-15",
+		license: "CC BY-SA 3.0",
+		licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+		author: "Minakshi .garg90",
+		sourceUrl: "https://commons.wikimedia.org/wiki/File:Maharishi_Markandeshwar_University,_Mullana.jpg",
+	},
 	"punjabi-university-online-distance": {
 		src: "/campus/punjabi.jpg",
 		alt: "The main gate and approach road at Punjabi University, Patiala",

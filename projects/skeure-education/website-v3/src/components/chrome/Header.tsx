@@ -57,7 +57,7 @@ export function Header() {
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "relative text-[0.95rem] font-medium transition-colors hover:text-accent",
-                  active ? "text-accent" : "text-ink-soft",
+                  active ? "text-accent-ink" : "text-ink-soft",
                 )}
               >
                 {l.label}

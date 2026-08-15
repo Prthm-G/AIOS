@@ -84,7 +84,7 @@ export function PageHero({
         <p
           data-reveal
           className={cn(
-            "font-mono text-[0.7rem] uppercase tracking-[0.22em] text-accent-ink sm:text-xs",
+            "font-mono text-[0.7rem] uppercase tracking-[0.22em] text-accent-deep sm:text-xs",
             align === "center" && "mx-auto",
           )}
         >

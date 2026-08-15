@@ -25,7 +25,11 @@
   --color-line: rgba(26, 26, 26, 0.1); /* hairline */
   --color-line-strong: rgba(26, 26, 26, 0.2); /* stronger rule */
   --color-accent: #ff611a; /* midlife vivid warm orange — the single accent */
-  --color-accent-ink: #b8410e; /* AA-safe orange for small text (~4.7:1) */
+  --color-accent-ink: #b8410e; /* AA-safe orange for small text (~4.9:1 on bg) */
+  /* Darkest step. Needed where the backdrop is the peach hero tint rather than the
+     page field: accent-ink is only 4.33:1 on #fadfc8, this is 5.6:1. Also the
+     accent button's hover state. */
+  --color-accent-deep: #9c3609;
   --color-amber: #e8a33d; /* brand amber — logo mark + gradient stop only */
   --color-whatsapp: #25d366; /* functional WhatsApp brand green */
 
