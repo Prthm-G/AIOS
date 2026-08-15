@@ -11,7 +11,12 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary: "bg-ink text-bg hover:bg-[#332e27]",
-        accent: "bg-accent text-white shadow-[0_6px_20px_-6px_rgba(255,97,26,0.6)] hover:bg-[#e5560f]",
+        // Fill is --color-accent-ink (#b8410e), not --color-accent (#ff611a): white on
+        // the vivid orange is only 3:1, below the 4.5:1 AA floor, and this is the
+        // primary CTA on every page. On accent-ink it is 5.5:1. The vivid orange is
+        // still the accent everywhere it belongs — wordmark dot, headline, hover rules,
+        // and the glow below — just never behind white text.
+        accent: "bg-accent-ink text-white shadow-[0_6px_20px_-6px_rgba(255,97,26,0.6)] hover:bg-[#9c3609]",
         secondary: "border border-line-strong text-ink hover:border-ink/45 hover:bg-surface",
         ghost: "text-ink hover:bg-surface",
         link: "gap-1 rounded-none px-0 text-ink underline decoration-line-strong decoration-1 underline-offset-4 hover:decoration-accent",

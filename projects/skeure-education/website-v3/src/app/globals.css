@@ -95,7 +95,9 @@ p {
 /* The parts we didn't draw still carry the design (craft floor). */
 
 ::selection {
-  background: var(--color-accent);
+  /* Same reason as the accent button: white on --color-accent is 3:1, so selected
+     text was harder to read than unselected text. accent-ink gives 5.5:1. */
+  background: var(--color-accent-ink);
   color: #fff;
 }
 
