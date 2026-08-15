@@ -32,11 +32,25 @@
   // builds override it via the environment. The matching TURNSTILE_SECRET *is* a
   // Worker secret (`wrangler secret put`), never a var and never in this file.
 
-  // CUTOVER STEP — intentionally left commented until the Pages project releases
-  // education.skeure.com. A Workers custom domain cannot claim a hostname that a
-  // Pages project still owns; deploying this early fails the whole deploy.
-  // Uncomment only at Phase 8, immediately after detaching the domain from the
-  // `skeure-education` Pages project.
+  // CUTOVER STEP — still commented. Attempted 2026-08-15 and rolled back.
+  //
+  // Two things must BOTH be true before uncommenting, and the second one bit us:
+  //   1. The `skeure-education` Pages project must release education.skeure.com.
+  //      (Works — needs Cloudflare Pages:Edit, which the deploy token has.)
+  //   2. The zone's existing `CNAME education.skeure.com -> skeure-education.pages.dev`
+  //      must be deleted, so wrangler can provision its own record and cert.
+  //      Wrangler will NOT overwrite it: it fails with code 100117, "Hostname
+  //      already has externally managed DNS records". This needs Zone:DNS:Edit on
+  //      skeure.com, which the token does NOT currently have.
+  //
+  // Releasing the Pages domain without being able to delete the CNAME leaves the
+  // hostname pointing at a project that no longer answers for it — a 522. Do not
+  // start this sequence again until the token can do step 2.
+  //
+  // ROLLBACK (verified working, ~2 min): re-POST education.skeure.com to the
+  // `skeure-education` Pages project domains endpoint. Cloudflare recreates the
+  // CNAME itself. The Astro project and its deployment history are retained for
+  // exactly this reason — do not delete that Pages project.
   // "routes": [{ "pattern": "education.skeure.com", "custom_domain": true }],
 
   // Bindings are NON-inheritable per environment, so anything the preview Worker
