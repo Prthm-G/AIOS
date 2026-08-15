@@ -27,6 +27,43 @@ const POS_Y = 0.46; // vertical bias of the laptop within the frame (matches dra
 const GLASS = { x0: 0.322, x1: 0.678, y0: 0.185, y1: 0.60 };
 const seg = (p: number, a: number, b: number) => Math.max(0, Math.min(1, (p - a) / (b - a)));
 
+// Below this width the frame is fitted to the viewport WIDTH instead of covering it.
+// Cover on a 2:1 frame in a portrait viewport scales to dw = h*2 — at 390×844 that is
+// a 1688px-wide draw, i.e. a 4.3x zoom showing only the middle ~23% of the laptop,
+// which is narrower than the 35.6%-wide screen glass the heading locks onto. Fitting
+// to width instead shows the whole machine and keeps the glass fully on-screen.
+// Must stay in lockstep with the `max-md:` poster variant on the canvas below —
+// Tailwind's md breakpoint is 768px, and `max-md:` applies strictly BELOW it.
+const NARROW_MAX = 768;
+const NARROW_POS_Y = 0.3; // sit the laptop high so the copy + CTAs own the lower field
+const isNarrow = () => window.innerWidth < NARROW_MAX;
+
+// Scroll-progress windows for each beat, as [start, end] fractions of the track.
+// Wide keeps the original choreography (open → type → copy → hold → close). Narrow
+// drops the open/close beats entirely, so everything shifts earlier and the track
+// gets shorter — 500vh of pinned scroll on a phone is five screens of thumb work
+// before the first real content.
+type Beat = readonly [start: number, end: number];
+interface Timeline {
+  scrim: Beat;
+  eyebrow: Beat;
+  type: Beat;
+  body: Beat;
+}
+const T_WIDE: Timeline = {
+  scrim: [0.34, 0.62],
+  eyebrow: [0.22, 0.34],
+  type: [0.38, 0.6],
+  body: [0.6, 0.74],
+};
+const T_NARROW: Timeline = {
+  scrim: [0.02, 0.2],
+  eyebrow: [0.02, 0.12],
+  type: [0.12, 0.46],
+  body: [0.46, 0.68],
+};
+const TRACK_VH = { wide: 500, narrow: 260 };
+
 export function HeroScroll() {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -55,19 +92,24 @@ export function HeroScroll() {
       images[i - 1] = img;
     }
 
-    // cover transform of the 2:1 frame into the canvas box (in canvas pixels)
+    // Placement of the 2:1 frame inside the canvas box (in canvas pixels).
+    // Wide viewports COVER (fill the box, crop the overflow). Narrow viewports fit to
+    // WIDTH and letterbox vertically — see NARROW_MAX for why cover is unusable there.
     const cover = (w: number, h: number) => {
       const ir = 1920 / 960;
       let dw: number;
       let dh: number;
-      if (ir > w / h) {
+      if (isNarrow()) {
+        dw = w;
+        dh = w / ir;
+      } else if (ir > w / h) {
         dh = h;
         dw = h * ir;
       } else {
         dw = w;
         dh = w / ir;
       }
-      return { dx: (w - dw) / 2, dy: (h - dh) * POS_Y, dw, dh };
+      return { dx: (w - dw) / 2, dy: (h - dh) * (isNarrow() ? NARROW_POS_Y : POS_Y), dw, dh };
     };
 
     const sizeCanvas = () => {
@@ -76,10 +118,34 @@ export function HeroScroll() {
       canvas.height = Math.round(canvas.clientHeight * dpr);
     };
 
+    // Fitting to width letterboxes the frame, and the render's studio field is a
+    // lighter grey than the page background — which shows up as two hard seams above
+    // and below the laptop. Sample the frame's own corner pixel once and flood the
+    // canvas with it so the band reads as one continuous field instead. Sampled
+    // rather than hardcoded so a re-render of the frames can't silently desync it.
+    let fieldColor = "";
+    const sampleField = (img: HTMLImageElement) => {
+      if (fieldColor || !img.complete || !img.naturalWidth) return;
+      const s = document.createElement("canvas");
+      s.width = 1;
+      s.height = 1;
+      const sctx = s.getContext("2d", { willReadFrequently: true });
+      if (!sctx) return;
+      sctx.drawImage(img, 0, 0, 1, 1, 0, 0, 1, 1);
+      const [r, g, b] = sctx.getImageData(0, 0, 1, 1).data;
+      fieldColor = `rgb(${r},${g},${b})`;
+    };
+
     const drawCover = (img: HTMLImageElement | undefined) => {
       if (!img || !img.complete || !img.naturalWidth) return;
       const { dx, dy, dw, dh } = cover(canvas.width, canvas.height);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      sampleField(img);
+      if (isNarrow() && fieldColor) {
+        ctx.fillStyle = fieldColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
       ctx.drawImage(img, dx, dy, dw, dh);
     };
 
@@ -99,9 +165,19 @@ export function HeroScroll() {
       box.style.width = `${width}px`;
       box.style.height = `${height}px`;
       const visW = Math.min(w, left + width) - Math.max(0, left);
-      const f = Math.max(22, Math.min(104, visW * 0.118));
+      // The headline is `whitespace-nowrap`, so the ratio has to keep the longest
+      // line ("same degree.") inside the glass rather than spilling onto the bezel.
+      // Narrow needs a smaller ratio: the glass is only ~36% of a 390px viewport,
+      // and at that size the original 0.118 pushed the line past both edges.
+      const narrow = isNarrow();
+      const f = Math.max(narrow ? 17 : 22, Math.min(104, visW * (narrow ? 0.101 : 0.118)));
       if (headingRef.current) headingRef.current.style.fontSize = `${f}px`;
-      if (eyebrowRef.current) eyebrowRef.current.style.fontSize = `${Math.max(9, f * 0.2)}px`;
+      if (eyebrowRef.current) {
+        eyebrowRef.current.style.fontSize = `${Math.max(narrow ? 7 : 9, f * 0.2)}px`;
+        // 0.24em tracking on 22 characters overflows the narrow glass and wraps the
+        // eyebrow onto a second line, crowding the headline. Tighten it there only.
+        eyebrowRef.current.style.letterSpacing = narrow ? "0.12em" : "";
+      }
     };
 
     const setText = (typedFrac: number) => {
@@ -119,18 +195,26 @@ export function HeroScroll() {
     };
 
     const render = (p: number) => {
-      const closing = seg(p, 0.82, 1); // 0 until hold ends, →1 fully closed
-      const openFrac = p <= 0.82 ? seg(p, 0, 0.3) : 1 - closing;
+      const narrow = isNarrow();
+      const closing = narrow ? 0 : seg(p, 0.82, 1); // 0 until hold ends, →1 fully closed
+      // Narrow viewports hold the laptop OPEN for the whole track. The open/close
+      // choreography is the desktop centrepiece, but on a phone it costs two thirds
+      // of the scroll to show a shut lid — the weakest possible first impression, and
+      // the state a visitor is most likely to bounce from.
+      const openFrac = narrow ? 1 : p <= 0.82 ? seg(p, 0, 0.3) : 1 - closing;
       drawCover(images[Math.round(openFrac * (FRAME_COUNT - 1))]);
 
       const fade = 1 - closing;
-      if (scrimRef.current) scrimRef.current.style.opacity = String(seg(p, 0.34, 0.62));
-      const typedFrac = seg(p, 0.38, 0.6);
+      // With no opening sequence to wait for, the narrow timeline starts almost
+      // immediately — otherwise the first third of the track is a static open laptop.
+      const t = narrow ? T_NARROW : T_WIDE;
+      if (scrimRef.current) scrimRef.current.style.opacity = String(seg(p, ...t.scrim));
+      const typedFrac = seg(p, ...t.type);
       setText(typedFrac);
       if (headingRef.current) headingRef.current.style.opacity = String(typedFrac > 0 ? fade : 0);
-      if (eyebrowRef.current) eyebrowRef.current.style.opacity = String(seg(p, 0.22, 0.34) * fade);
+      if (eyebrowRef.current) eyebrowRef.current.style.opacity = String(seg(p, ...t.eyebrow) * fade);
 
-      const bodyFrac = seg(p, 0.6, 0.74);
+      const bodyFrac = seg(p, ...t.body);
       if (bodyRef.current) {
         bodyRef.current.style.opacity = String(bodyFrac * fade);
         bodyRef.current.style.transform = `translateY(${(1 - bodyFrac) * 18}px)`;
@@ -142,7 +226,8 @@ export function HeroScroll() {
       positionHeading();
       const openImg = images[FRAME_COUNT - 1];
       const paint = () => drawCover(openImg);
-      openImg.complete ? paint() : (openImg.onload = paint);
+      if (openImg.complete) paint();
+      else openImg.onload = paint;
       if (l1Ref.current) l1Ref.current.textContent = L1;
       if (l2Ref.current) l2Ref.current.textContent = L2;
       [p1Ref, p2Ref, headingRef, eyebrowRef, bodyRef, scrimRef].forEach((r) => {
@@ -158,7 +243,10 @@ export function HeroScroll() {
       return;
     }
 
-    section.style.height = "500vh"; // long track → slow, deliberate scrub
+    const setTrack = () => {
+      section.style.height = `${isNarrow() ? TRACK_VH.narrow : TRACK_VH.wide}vh`;
+    };
+    setTrack(); // long track → slow, deliberate scrub (shorter on phones)
     sizeCanvas();
     positionHeading();
     let raf = 0;
@@ -171,6 +259,7 @@ export function HeroScroll() {
       });
     };
     const onResize = () => {
+      setTrack(); // rotating a phone can cross NARROW_MAX in either direction
       sizeCanvas();
       positionHeading();
       onScroll();
@@ -190,11 +279,15 @@ export function HeroScroll() {
   return (
     <section ref={sectionRef} className="relative min-h-[100svh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#eeedea]">
-        {/* laptop frame sequence — canvas paints over the closed-poster fallback */}
+        {/* Laptop frame sequence — canvas paints over a poster fallback that shows
+            until the first frame decodes. Each breakpoint gets the poster matching the
+            state it actually rests in: wide starts closed and opens on scroll, narrow
+            holds open throughout, so a closed poster there would flash a lid that never
+            appears. Sizing mirrors the canvas transform (cover vs fit-width). */}
         <canvas
           ref={canvasRef}
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 h-full w-full [background:url(/render/laptop-closed-poster.jpg)_50%_46%/cover_no-repeat]"
+          className="pointer-events-none absolute inset-0 h-full w-full [background:url(/render/laptop-closed-poster.jpg)_50%_46%/cover_no-repeat] max-md:[background:url(/render/laptop-open-poster.jpg)_50%_30%/100%_auto_no-repeat]"
         />
         {/* light scrim so the copy + CTAs read where the laptop melts into the field */}
         <div
@@ -247,7 +340,10 @@ export function HeroScroll() {
         <div
           ref={bodyRef}
           style={{ opacity: 0 }}
-          className="absolute inset-x-0 bottom-[7vh] z-20 mx-auto flex max-w-2xl flex-col items-center gap-6 px-6 text-center"
+          /* Clear the WhatsApp FAB (fixed bottom-5, size-14 -> occupies up to 76px
+             from the bottom, and it renders below lg). At bottom-[7vh] the trust line
+             ran underneath it and read "…BASED IN I". */
+          className="absolute inset-x-0 bottom-24 z-20 mx-auto flex max-w-2xl flex-col items-center gap-6 px-6 text-center lg:bottom-[7vh]"
         >
           <p className="max-w-xl text-lg leading-relaxed text-ink-soft">
             Free, no-pressure counselling into UGC-recognised online degrees from Amity, LPU and other
