@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "skeure-education-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets"
+  },
+  "observability": {
+    "enabled": true
+  },
+  // Deploys go to the `preview` environment only this task (never top-level /
+  // production). Bindings are NON-inheritable per environment, so anything the
+  // preview Worker needs is declared inside env.preview — nothing here leaks in.
+  //
+  // DB is deliberately left UNBOUND on preview: the contact route degrades to
+  // { persisted: false } when env.DB is absent, so no preview submission can
+  // ever reach the production `skeure-leads` D1. TURNSTILE_SECRET is supplied at
+  // deploy time (use a Turnstile *test* secret for preview).
+  "env": {
+    "preview": {
+      "name": "skeure-education-web-preview",
+      "observability": {
+        "enabled": true
+      }
+    }
+  }
+}

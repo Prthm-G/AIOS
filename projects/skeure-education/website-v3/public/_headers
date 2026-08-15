@@ -1,0 +1,24 @@
+# Cloudflare Pages static headers. See:
+# https://developers.cloudflare.com/pages/configuration/headers/
+#
+# /_astro/* files are Astro's build output — every filename is content-hashed
+# (e.g. hero-retro-computer.AxW0N7vJ_25Y0ro.avif), so the content of a given
+# URL never changes. Safe to cache forever with `immutable`.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Everything else under /logos/, plus the favicon and OG image, is served
+# from public/ with a STABLE filename that CAN change content on a future
+# edit (e.g. a university sends an updated logo) without the URL changing.
+# Do not mark these immutable — a moderate max-age lets browsers avoid
+# re-fetching on every visit while still picking up updates reasonably soon.
+# If a file here is replaced, also bump this comment's date so it's obvious
+# a fresher deploy occurred: last touched 2026-07-24.
+/logos/*
+  Cache-Control: public, max-age=86400, must-revalidate
+/favicon.ico
+  Cache-Control: public, max-age=86400, must-revalidate
+/favicon.svg
+  Cache-Control: public, max-age=86400, must-revalidate
+/og-home.jpg
+  Cache-Control: public, max-age=86400, must-revalidate

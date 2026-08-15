@@ -1,0 +1,210 @@
+---
+name: "Lovely Professional University"
+city: "Phagwara"
+state: "Punjab"
+establishedYear: 2005
+officialSite: "https://www.lpuonline.com"
+featured: true
+evidenceStatus: "stale"
+accreditations:
+  - "UGC-recognised (DEB)"
+  - "NAAC A++ (CGPA 3.68/4)"
+  - "AICTE Approved"
+  - "WES Recognised (USA/Canada)"
+history:
+  - year: 2005
+    event: "Founded as a private university in Phagwara, Punjab."
+  - year: 2012
+    event: "Launched its Online & Distance Learning programs."
+achievements:
+  - "NAAC A++ accredited with a CGPA of 3.68/4"
+  - "Degrees recognised by World Education Services (WES) for study/work in the USA and Canada"
+  - "Online and Distance degrees are valid for government jobs and competitive exams (UPSC, banking, SSC) per UGC guidelines"
+  - "e-Connect learning portal runs 24/7/365, including holidays"
+learningPlatform:
+  name: "e-Connect"
+  features:
+    - "Personal Contact Programme (PCP) for direct faculty access alongside self-paced learning"
+    - "24/7 LMS access to recorded lectures, digital library, and assignments, including Sundays and national holidays"
+    - "Secure Exam Application (SEA) for remotely proctored term-end exams"
+    - "Official LPU Online mobile app (Android 7.0+)"
+    - "AI-based mock interviews scheduled twice a month for final-year students"
+placements:
+  headline: "Highest reported package ₹42 LPA at top tech firms; typical range ₹3.5–7.0 LPA"
+  recruiters:
+    - "TCS"
+    - "Amazon"
+    - "Deloitte"
+  roles:
+    - role: "MCA/BCA/MBA graduates (average package)"
+      salary: "₹3.5–7.0 LPA"
+faq:
+  - question: "Are LPU Online and Distance degrees valid for government jobs?"
+    answer: "Yes, degrees earned via LPU Online and Distance modes are valid for all state and central government job applications, including UPSC, banking, and SSC, as per UGC guidelines."
+    category: "Admissions & Eligibility"
+  - question: "What are the eligibility criteria for LPU's placement assistance?"
+    answer: "You need to clear all previous semester papers with no active backlogs, maintain a CGPA of 6.0 or higher, and complete the Professional Enhancement Programme (PEP) modules."
+    category: "Placements"
+  - question: "Can LPU Online students attend on-campus placement drives?"
+    answer: "Yes, LPU Online and Distance students can take part in on-campus placement drives, job mega-fairs, and corporate joint drives hosted in Jalandhar."
+    category: "Placements"
+  - question: "What internet speed do I need for online exams?"
+    answer: "A stable connection with a minimum upload/download speed of 2 Mbps. A mobile hotspot works, but a dedicated broadband link is recommended."
+    category: "Technology"
+  - question: "Can I use a Chromebook for the Secure Exam Application?"
+    answer: "No, the Secure Exam Application (SEA) doesn't support Chromebooks or iPadOS/iOS. It runs on Windows 10/11 (64-bit), macOS 10.15+ (Intel or Apple Silicon), Linux, and Android."
+    category: "Technology"
+  - question: "What are the minimum system requirements for exams?"
+    answer: "At least 4 GB RAM (8 GB recommended), a working webcam (min. 640×480) and microphone, and a screen resolution of 1024×768 or higher."
+    category: "Technology"
+  - question: "Is the LMS accessible on holidays?"
+    answer: "Yes, the e-Connect LMS portal operates 24/7/365, so recorded lectures, the digital library, and assignments are available on Sundays and national holidays too."
+    category: "Technology"
+  - question: "What happens if there's a power cut during my exam?"
+    answer: "Your answers save in real time. If you lose power or your system crashes, log back in within 15 minutes to resume exactly where you left off."
+    category: "Assessments"
+  - question: "Will a brief internet drop get me disqualified?"
+    answer: "No, temporary drops don't cause instant disqualification. The exam app caches your progress locally and syncs once you're reconnected; only a prolonged disconnection triggers a warning."
+    category: "Assessments"
+  - question: "Can I use an external monitor or run the exam app in a virtual machine?"
+    answer: "No to both, a second display is automatically blocked, and the Secure Exam Application detects and blocks virtualization layers (VMware, VirtualBox, Hyper-V)."
+    category: "Assessments"
+  - question: "Are headphones allowed during proctored exams?"
+    answer: "No, audio must play through your system speakers with your ears visible. Bluetooth headsets and wired earphones aren't permitted."
+    category: "Assessments"
+  - question: "Do working professionals need anything extra to sit for placement drives?"
+    answer: "Yes, if you're considering a job change through an LPU placement drive, you're advised to get a No Objection Certificate (NOC) from your current employer before final selection."
+    category: "Placements"
+  - question: "Which platforms are used for virtual placement drives?"
+    answer: "Recruitment runs online via tools like Cocubes, Wheebox, MS Teams, and Zoom, combining digital aptitude tests, technical coding rounds, and online HR interviews."
+    category: "Placements"
+courses:
+  - name: "Online MBA"
+    category: "Management"
+    level: "PG"
+    duration: "2 years (4 semesters); up to 4 years for working professionals"
+    mode: "Online"
+    eligibility: "Bachelor's degree in any discipline"
+    fees:
+      semesterWise: 40400
+    notes: "Post-20% Student Grant, includes exam fee. Plus a one-time Rs. 1,000 registration fee. International: ~US$2,000/semester + US$100 exam fee."
+    specializations:
+      - name: "Human Resource Management"
+        description: "Business administration principles combined with HR management expertise for HR leadership roles."
+      - name: "Finance"
+        description: "Business administration integrated with advanced finance knowledge for financial leadership roles."
+      - name: "Marketing"
+        description: "Business administration combined with modern marketing strategies and techniques."
+      - name: "Operations Management"
+        description: "Business administration principles with expertise in optimising organisational operations."
+      - name: "Business Analytics"
+        description: "Business administration integrated with advanced analytics for data-driven decision making. Covers Excel, R, ARIMA, GARCH, VAR."
+      - name: "Digital Marketing"
+        description: "Business administration with modern digital marketing strategy. Covers SEO, Google Ads, Facebook Ads, YouTube advertising, email marketing."
+      - name: "Data Science"
+        description: "Business administration with advanced data science skills. Covers Tableau, Power BI, Machine Learning, Big Data."
+      - name: "Information Technology"
+        description: "Business administration with advanced IT expertise. Covers cloud computing (IaaS/PaaS/SaaS), cybersecurity tools, IoT."
+      - name: "International Business"
+        description: "Global business concepts, cross-cultural communication, global strategy, international finance and risk management."
+      - name: "Hospital & Healthcare Management"
+        description: "Healthcare administration and management practices for healthcare leadership roles."
+      - name: "Logistics & Supply Chain Management"
+        description: "Logistics, procurement, warehousing and supply chain operations."
+      - name: "Banking & Financial Services"
+        description: "Advanced knowledge of banking systems, financial institutions, and financial services management."
+      - name: "Dual Specialization"
+        description: "Combine any two of the above specializations in one MBA."
+  - name: "Online MCA"
+    category: "Computer Applications"
+    level: "PG"
+    duration: "2 years (4 semesters, 104 credits)"
+    mode: "Online"
+    eligibility: "Bachelor's degree with Mathematics at 10+2 or graduation level"
+    fees:
+      semesterWise: 32400
+    notes: "Post-20% Student Grant, includes exam fee. 28 core courses + 4 discipline electives + 4 generic electives + 4 skill-enhancement courses. International: ~US$1,250/semester + US$100 exam fee."
+    specializations:
+      - name: "Machine Learning & Artificial Intelligence"
+        description: "Probabilistic models, sequence models, Hidden Markov models, RNNs, NLP, and deep learning."
+      - name: "Data Science"
+        description: "Python, Pandas, SQL, Oracle, SPSS, and advanced analytics platforms for data-driven roles."
+      - name: "Cyber Security"
+        description: "Protecting digital environments through modern cybersecurity concepts, tools, and defensive techniques."
+      - name: "Full Stack Web Development"
+        description: "Modern frontend and backend web development technologies."
+      - name: "AR/VR (Game Development)"
+        description: "Immersive augmented reality, virtual reality, and game development."
+  - name: "Online BCA"
+    category: "Computer Applications"
+    level: "UG"
+    duration: "3 years (6 semesters); up to 6 years flexibility"
+    mode: "Online"
+    eligibility: "10+2 in any stream"
+    fees:
+      semesterWise: 20400
+    notes: "Post-20% Student Grant, includes exam fee. Covers Python, PHP, Java, SQL, Linux, Bootstrap, DBMS, Software Engineering, Computer Networks, Operating Systems, and AI."
+  - name: "Online BBA"
+    category: "Management"
+    level: "UG"
+    duration: "3 years (6 semesters)"
+    mode: "Online"
+    eligibility: "10+2 in any stream"
+    fees:
+      semesterWise: 20400
+    notes: "Post-20% Student Grant, includes exam fee. International: ~US$1,250/semester + US$100 exam fee. Covers Accounting Software, Office Automation, Project Management tools, and Data Analytics."
+  - name: "Online M.Com"
+    category: "Commerce"
+    level: "PG"
+    duration: "2 years"
+    mode: "Online"
+    eligibility: "Bachelor's degree in Commerce or related field"
+    fees:
+      semesterWise: 20400
+    notes: "Post-20% Student Grant, includes exam fee. International: ~US$1,050/semester + US$100 exam fee. Interdisciplinary electives include Data Science Toolbox, Digital & Social Media Marketing, and Security Analysis."
+  - name: "Online BA"
+    category: "Arts & Humanities"
+    level: "UG"
+    duration: "3 years (6 semesters); up to 6 years flexibility"
+    mode: "Online"
+    eligibility: "10+2 in any stream"
+    fees:
+      semesterWise: 16400
+    notes: "Post-20% Student Grant, includes exam fee. International: ~US$850/semester + US$100 exam fee."
+  - name: "Online MA"
+    category: "Arts & Humanities"
+    level: "PG"
+    duration: "2 years"
+    mode: "Online"
+    eligibility: "Bachelor's degree in any discipline"
+    fees:
+      semesterWise: 16400
+    notes: "Post-20% Student Grant, includes exam fee."
+    specializations:
+      - name: "English"
+      - name: "History"
+      - name: "Sociology"
+      - name: "Political Science"
+  - name: "Online M.Sc Mathematics"
+    category: "Science"
+    level: "PG"
+    duration: "2 years"
+    mode: "Online"
+    eligibility: "Bachelor's degree with Mathematics"
+    fees:
+      semesterWise: 20400
+    notes: "Post-20% Student Grant, includes exam fee. International: ~US$850/semester + US$100 exam fee. Interdisciplinary electives include Advanced Data Visualization, Financial Analytics, and Forex Management."
+  - name: "Online M.Sc Economics"
+    category: "Science"
+    level: "PG"
+    duration: "2 years"
+    mode: "Online"
+    eligibility: "Bachelor's degree in Economics or a related quantitative discipline"
+    fees:
+      semesterWise: 20400
+    notes: "Post-20% Student Grant, includes exam fee. International: ~US$850/semester + US$100 exam fee. Interdisciplinary electives include Financial Analytics and International Banking & Forex Management."
+---
+
+LPU Online brings the same curriculum and faculty as LPU's on-campus degrees to students studying from anywhere in Punjab and beyond, across nine UG/PG programs in management, computer applications, commerce, arts, and sciences. All programs run on a semester-wise fee structure with an active 20% Student Grant already applied to the figures below, a flat Rs. 1,000 one-time registration fee, and an examination fee already folded into the semester total. International applicants outside LPU's specified neighbouring-countries list pay in USD, roughly $850–$2,000/semester depending on the program plus a $100 exam fee.
+
+Fee figures are sourced from an internal "July 2026 Fee Structure" reference document, not yet cross-checked directly against LPU's published official fee page. Placement package figures are as reported by LPU Online's own official materials, not independently audited. Treat figures on this page as unverified until re-confirmed against a live, dated official source — except the Online MBA's UGC entitlement, which was personally re-checked and confirmed by Pratham Goel on 25 July 2026.

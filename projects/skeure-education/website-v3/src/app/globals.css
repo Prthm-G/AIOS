@@ -1,0 +1,416 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   Skeure Education — v3 design system  ·  Apple register (handhold × midlife)
+   Colors sampled live from handhold.io + midlife.engineering: a warm off-white
+   field, near-black ink, a single vivid-orange accent. Apple materials — crisp
+   white cards, large radii, whisper-soft warm shadows, frosted translucency —
+   plus soft iridescent pastel auras for depth. One calm scroll-reveal motion,
+   spring physics. Applied globally — no per-page skins.
+   ============================================================================ */
+
+@theme {
+  /* Color — Apple register (contrast-checked on --color-bg) */
+  --color-bg: #f2f1ed; /* warm off-white field (handhold #F2F1ED) */
+  --color-surface: #ffffff; /* crisp elevated card (Apple white) */
+  --color-surface-2: #f7f6f2; /* subtle nested surface */
+  --color-sunken: #e8e6e0; /* recessed band */
+  --color-ink: #1a1a1a; /* near-black — body + display (headings ~#262626) */
+  --color-ink-soft: #565450; /* secondary text (~5.3:1 on bg — AA body) */
+  --color-ink-faint: #8a8781; /* meta/decorative only — never body copy */
+  --color-line: rgba(26, 26, 26, 0.1); /* hairline */
+  --color-line-strong: rgba(26, 26, 26, 0.2); /* stronger rule */
+  --color-accent: #ff611a; /* midlife vivid warm orange — the single accent */
+  --color-accent-ink: #b8410e; /* AA-safe orange for small text (~4.7:1) */
+  --color-amber: #e8a33d; /* brand amber — logo mark + gradient stop only */
+  --color-whatsapp: #25d366; /* functional WhatsApp brand green */
+
+  /* Iridescent aura stops (handhold's Spline pastels — soft depth only) */
+  --color-aura-mint: #b9e6c9;
+  --color-aura-peach: #ffd3b0;
+  --color-aura-lilac: #cbd3f2;
+  --color-aura-butter: #fbe3a0;
+  --color-aura-sky: #bfe0f0;
+
+  /* Type — self-hosted via next/font (see layout.tsx) */
+  --font-display: var(--font-manrope), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-fragment-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+
+  /* Depth — Apple soft, warm-tinted */
+  --shadow-soft: 0 1px 2px rgba(26, 26, 26, 0.05), 0 10px 30px -16px rgba(26, 26, 26, 0.16);
+  --shadow-card: 0 2px 4px rgba(26, 26, 26, 0.04), 0 18px 44px -24px rgba(26, 26, 26, 0.22);
+  --shadow-float: 0 48px 96px -40px rgba(26, 26, 26, 0.3);
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+}
+
+/* --------------------------------------------------------------- base ---- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scrollbar-color: var(--color-line-strong) transparent;
+  caret-color: var(--color-accent-ink);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--color-ink);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* ---------------------------------------------- themed browser surfaces ---- */
+/* The parts we didn't draw still carry the design (craft floor). */
+
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent-ink);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border: 3px solid var(--color-bg);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-faint);
+}
+
+/* Tabular numerals for stats / numeric data. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------- layout helper ---- */
+
+.wrap {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 640px) {
+  .wrap {
+    padding-inline: 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  .wrap {
+    padding-inline: 2.5rem;
+  }
+}
+
+.wrap-narrow {
+  width: 100%;
+  max-width: 44rem; /* ~68ch reading measure for prose */
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 640px) {
+  .wrap-narrow {
+    padding-inline: 2rem;
+  }
+}
+
+/* ----------------------------------------- retro-technical grid texture ---- */
+
+.grid-paper {
+  background-image:
+    linear-gradient(var(--color-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+/* ---------------------------------------------- iridescent aura (handhold) ---- */
+/* Soft blurred pastel depth. Used sparingly behind the 3D hero and at a couple
+   section transitions — restraint is the point (Apple). Decorative only. */
+
+.aura {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 999px;
+  filter: blur(64px);
+  opacity: 0.6;
+  z-index: 0;
+}
+.iridescent {
+  background:
+    radial-gradient(42% 55% at 22% 30%, var(--color-aura-peach), transparent 70%),
+    radial-gradient(40% 52% at 76% 28%, var(--color-aura-lilac), transparent 72%),
+    radial-gradient(48% 56% at 62% 76%, var(--color-aura-mint), transparent 70%),
+    radial-gradient(40% 50% at 30% 80%, var(--color-aura-butter), transparent 72%);
+}
+
+/* Signature per-page header auras: single soft pastel blobs that drift slowly.
+   Transform/opacity only, paused entirely for reduced motion. Decorative. */
+@media (prefers-reduced-motion: no-preference) {
+  .aura-drift-a {
+    animation: auraDriftA 19s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  .aura-drift-b {
+    animation: auraDriftB 23s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+}
+@keyframes auraDriftA {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4%, -3%, 0) scale(1.09);
+  }
+}
+@keyframes auraDriftB {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.06);
+  }
+  to {
+    transform: translate3d(-5%, 4%, 0) scale(1);
+  }
+}
+
+/* Frosted translucent material (Apple) — header, floating CTA, chips. */
+.frost {
+  background: color-mix(in srgb, var(--color-bg) 78%, transparent);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+}
+
+/* Full-bleed hero scrims — keep overlaid headline legible + blend edges into the
+   warm field. Left+bottom fade to --bg; a separate top fade sits under the header. */
+.hero-scrim {
+  background:
+    linear-gradient(
+      90deg,
+      var(--color-bg) 0%,
+      color-mix(in srgb, var(--color-bg) 70%, transparent) 34%,
+      transparent 60%
+    ),
+    linear-gradient(0deg, var(--color-bg) 2%, transparent 42%);
+}
+.hero-top-fade {
+  background: linear-gradient(var(--color-bg), transparent);
+}
+/* very slow ken-burns drift on the bg image — stays covered (scale > 1). */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-bg-drift {
+    animation: heroDrift 22s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+}
+@keyframes heroDrift {
+  from {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.07) translate3d(-1.2%, -1%, 0);
+  }
+}
+
+/* Hero machine idle float — transform-only, paused for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-float {
+    animation: heroFloat 7.5s var(--ease-out-expo) infinite;
+    will-change: transform;
+  }
+}
+@keyframes heroFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -15px, 0) rotate(-0.6deg);
+  }
+}
+
+/* ---- hero computer: 3D tilt stage + terminal screen typing ------------------ */
+.hero-stage {
+  perspective: 1400px;
+}
+.hero-tilt {
+  transform-style: preserve-3d;
+  transition: transform 0.25s var(--ease-out-expo);
+  will-change: transform;
+}
+
+/* the tagline "screen" — darken the bright generated CRT so glowing amber text
+   reads, add scanlines. Positioned + sized over the render's screen in Hero.tsx. */
+.screen {
+  background: radial-gradient(125% 125% at 50% 42%, rgba(35, 14, 0, 0.28), rgba(18, 7, 0, 0.66));
+  color: #ffd39c;
+  text-shadow: 0 0 10px rgba(255, 150, 60, 0.55);
+  font-family: var(--font-mono);
+  overflow: hidden;
+}
+.screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+/* Dark laptop LCD — light mono text on the already-black screen, soft glow. */
+.screen-dark {
+  color: #f4f1ea;
+  text-shadow: 0 0 14px rgba(255, 200, 150, 0.3);
+  font-family: var(--font-mono);
+  overflow: hidden;
+}
+.line {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+.line-row {
+  display: flex;
+  align-items: center;
+  gap: 0.12em;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .line1 {
+    width: 0;
+    animation: type1 0.9s steps(12) 0.35s both;
+  }
+  .line2 {
+    width: 0;
+    animation: type2 0.8s steps(11) 1.25s both;
+  }
+  .cursor {
+    opacity: 0;
+    animation: blink 1s step-end 2.1s infinite;
+  }
+}
+@keyframes type1 {
+  to {
+    width: 12ch;
+  }
+}
+@keyframes type2 {
+  to {
+    width: 11ch;
+  }
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* -------------------------------------------------- scroll-reveal system ---- */
+/* Hidden only when JS is present AND motion is allowed, so a no-JS or
+   reduced-motion visitor sees fully-visible content with zero layout shift. */
+
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.7s var(--ease-out-expo),
+      transform 0.7s var(--ease-out-expo);
+  }
+  html.js [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+  html.js [data-reveal-group] > * {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.6s var(--ease-out-expo),
+      transform 0.6s var(--ease-out-expo);
+  }
+  html.js [data-reveal-group].is-visible > * {
+    opacity: 1;
+    transform: none;
+  }
+  html.js [data-reveal-group].is-visible > *:nth-child(2) { transition-delay: 0.07s; }
+  html.js [data-reveal-group].is-visible > *:nth-child(3) { transition-delay: 0.14s; }
+  html.js [data-reveal-group].is-visible > *:nth-child(4) { transition-delay: 0.21s; }
+  html.js [data-reveal-group].is-visible > *:nth-child(5) { transition-delay: 0.28s; }
+  html.js [data-reveal-group].is-visible > *:nth-child(6) { transition-delay: 0.35s; }
+}
+
+/* -------------------------------------------------- logo marquee ------------ */
+/* Continuous colored partner-logo banner. The track holds two copies of the row;
+   translating one copy-width loops seamlessly. Paused on hover; static for
+   reduced motion. Edges feather via a mask. */
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: 3.5rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .marquee-track {
+    animation: marquee 48s linear infinite;
+    will-change: transform;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}

@@ -1,0 +1,3 @@
+# Chitkara University removed from the partner list (2026-08-13). Redirect the
+# previously-indexed profile URL to the universities index instead of 404ing.
+/universities/chitkara-university-online/  /universities/  301
