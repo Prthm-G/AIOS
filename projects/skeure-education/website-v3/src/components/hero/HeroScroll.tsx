@@ -164,6 +164,7 @@ export function HeroScroll() {
       box.style.top = `${top}px`;
       box.style.width = `${width}px`;
       box.style.height = `${height}px`;
+      box.style.visibility = "visible"; // safe to show now that it has real coordinates
       const visW = Math.min(w, left + width) - Math.max(0, left);
       // The headline is `whitespace-nowrap`, so the ratio has to keep the longest
       // line ("same degree.") inside the glass rather than spilling onto the bezel.
@@ -297,8 +298,16 @@ export function HeroScroll() {
         />
 
         {/* heading — absolutely locked onto the laptop's screen glass (see positionHeading) */}
+        {/* Hidden until positionHeading() gives it real coordinates. Server-rendered
+            it has no left/top/width/height, so it lands wherever `absolute` puts it and
+            then jumps when the effect runs — a 0.055 layout shift, against a live site
+            that holds CLS at 0. `visibility` (not opacity) because it must not
+            participate in layout shift at all. Nothing is lost without JS: the heading
+            and eyebrow already start at opacity 0, and the real <h1> is the sr-only one
+            in sections/Hero.tsx. */}
         <div
           ref={screenBoxRef}
+          style={{ visibility: "hidden" }}
           className="pointer-events-none absolute z-20 flex flex-col items-center justify-center gap-[0.5em] text-center"
         >
           <p

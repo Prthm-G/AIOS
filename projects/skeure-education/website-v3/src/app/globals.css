@@ -17,7 +17,11 @@
   --color-sunken: #e8e6e0; /* recessed band */
   --color-ink: #1a1a1a; /* near-black — body + display (headings ~#262626) */
   --color-ink-soft: #565450; /* secondary text (~5.3:1 on bg — AA body) */
-  --color-ink-faint: #8a8781; /* meta/decorative only — never body copy */
+  /* Was #8a8781 (3.16:1) with the note "meta/decorative only — never body copy".
+     In practice it is used for real text in 25+ places — footer legal links, post
+     dates, contact labels, list markers — so it has to clear AA. #6f6c65 is ~4.7:1
+     on --color-bg and keeps the warm-grey step below --color-ink-soft. */
+  --color-ink-faint: #6f6c65; /* meta text — AA-safe (~4.7:1 on bg) */
   --color-line: rgba(26, 26, 26, 0.1); /* hairline */
   --color-line-strong: rgba(26, 26, 26, 0.2); /* stronger rule */
   --color-accent: #ff611a; /* midlife vivid warm orange — the single accent */
