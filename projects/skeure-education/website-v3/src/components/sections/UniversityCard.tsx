@@ -24,16 +24,27 @@ const MAX_CHIP = 34;
  */
 export function toChip(raw: string): string {
   let s = raw.trim();
+
+  // UGC status is classified FIRST, ahead of the length short-circuit below:
+  // "UGC-recognised (DEB)" is already chip-sized but still has to collapse to the
+  // same label as the long entitlement sentences, so the whole listing speaks with
+  // one voice about regulatory status.
+  //
+  // Order matters. An entitlement the university asserts about itself while
+  // independent confirmation is still pending is NOT verified, and is caught before
+  // the confirmed branch can claim it.
+  if (/ugc/i.test(s)) {
+    if (/^UGC\s+entitled/i.test(s) && /pending|not yet confirmed/i.test(s)) return "UGC entitled · self-reported";
+    if (/not yet confirmed|still pending/i.test(s)) return "UGC status unconfirmed";
+    if (/UGC[-\s]?DEB[^.]*entitled|UGC[-\s]?recogni[sz]ed/i.test(s)) return "UGC verified";
+    if (/^UGC\s+entitled/i.test(s)) return "UGC entitled · self-reported";
+  }
+
   if (s.length <= MAX_CHIP) return s;
 
   // "NAAC A++ (CGPA 3.57, per their own accreditation page)" -> "NAAC A++"
   const naac = s.match(/^NAAC\s+(A\+{0,2}|B\+{0,2}|C)\b/i);
   if (naac) return `NAAC ${naac[1].toUpperCase()}`;
-
-  // Keep the caveat, lose the paragraph. This must never read as recognised.
-  if (/not yet confirmed/i.test(s)) return "UGC status unconfirmed";
-  if (/UGC[-\s]?DEB[^.]*entitled/i.test(s)) return "UGC-DEB entitled";
-  if (/^UGC\s+entitled/i.test(s)) return "UGC entitled · self-reported";
 
   const selfReported = /university-reported|self-reported|own materials/i.test(s);
   const mark = (t: string) => (selfReported ? `${t} · self-reported` : t);

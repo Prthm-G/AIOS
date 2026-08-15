@@ -27,10 +27,7 @@ export function EvidenceStatus({
   return (
     <div className="flex items-start gap-3 rounded-xl border border-line bg-surface-2 p-4 text-sm leading-relaxed text-ink-soft">
       <Icon className={`mt-0.5 size-4 shrink-0 ${verified ? "text-accent-ink" : "text-ink-faint"}`} aria-hidden="true" />
-      <p>
-        {EVIDENCE_LINES[status](lastVerifiedAt)}{" "}
-        <span className="text-ink">Confirm your exact programme and fees with us on WhatsApp before applying.</span>
-      </p>
+      <p>{EVIDENCE_LINES[status](lastVerifiedAt)}</p>
     </div>
   );
 }
