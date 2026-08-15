@@ -1,4 +1,11 @@
+# The AI-crawler blocks and Content-Signal preamble visible on the live site are
+# injected at the edge by Cloudflare's managed robots.txt (a zone-level setting on
+# skeure.com), not from this file. Keep that feature enabled after the Pages ->
+# Workers cutover or those directives disappear.
+
 User-agent: *
 Allow: /
 
-Sitemap: https://education.skeure.com/sitemap-index.xml
+# Was /sitemap-index.xml under Astro (@astrojs/sitemap). Next's App Router
+# emits a single sitemap at /sitemap.xml (see src/app/sitemap.ts).
+Sitemap: https://education.skeure.com/sitemap.xml

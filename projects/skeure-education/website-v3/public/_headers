@@ -1,11 +1,23 @@
-# Cloudflare Pages static headers. See:
-# https://developers.cloudflare.com/pages/configuration/headers/
+# Static headers for Cloudflare Workers Static Assets. Verified honored on the
+# preview Worker (2026-08-15) — /logos/* returns the max-age below. See:
+# https://developers.cloudflare.com/workers/static-assets/headers/
 #
-# /_astro/* files are Astro's build output — every filename is content-hashed
-# (e.g. hero-retro-computer.AxW0N7vJ_25Y0ro.avif), so the content of a given
-# URL never changes. Safe to cache forever with `immutable`.
-/_astro/*
+# /_next/static/* is Next's build output — every filename is content-hashed
+# (e.g. chunks/webpack-4c9c27e0f0fab02a.js), so the content of a given URL never
+# changes. Safe to cache forever with `immutable`. Without this rule the Worker
+# serves these as `max-age=0, must-revalidate`, which is a revalidation round
+# trip on every bundle, on every visit. (Was /_astro/* under Astro.)
+/_next/static/*
   Cache-Control: public, max-age=31536000, immutable
+
+# The 61-frame hero sequence the pinned scroll paints to canvas. Filenames are
+# stable (f-001.webp …) but the frames are regenerated only as a set alongside a
+# deploy, and a stale frame is a cosmetic miss rather than a wrong fact — so a
+# long max-age without `immutable` gets the caching win while still allowing an
+# update to land. These are fetched 61-at-once, so an uncached sequence is the
+# single biggest repeat-visit cost on the homepage.
+/render/frames/*
+  Cache-Control: public, max-age=2592000
 
 # Everything else under /logos/, plus the favicon and OG image, is served
 # from public/ with a STABLE filename that CAN change content on a future

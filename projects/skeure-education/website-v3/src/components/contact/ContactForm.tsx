@@ -7,9 +7,20 @@ import { track } from "@/lib/analytics";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
-// Cloudflare test sitekey (always passes) as the dev/preview default. Production
-// sets the real domain-locked sitekey via NEXT_PUBLIC_TURNSTILE_SITEKEY.
-const SITEKEY = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY || "1x00000000000000000000AA";
+// The real, domain-locked Turnstile sitekey — the same widget the live site uses.
+// A sitekey is public by definition (it ships in the HTML below); its security
+// property is that Cloudflare only accepts it from an allowed domain, and the
+// server still verifies the token against the secret in src/app/api/contact/route.ts.
+//
+// This is a build-time default rather than a runtime binding on purpose: Next
+// inlines NEXT_PUBLIC_* at build time, so a wrangler.jsonc `vars` entry would
+// never reach this bundle. Preview builds override it with Cloudflare's
+// always-pass test key by exporting NEXT_PUBLIC_TURNSTILE_SITEKEY before building.
+//
+// It previously defaulted to the TEST key, which fails *open* — any build that
+// forgot the override shipped a form with no bot protection at all. Defaulting to
+// the real key fails *closed* instead: wrong domain, no token, no submission.
+const SITEKEY = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY || "0x4AAAAAAD9TZwzIJi3WQuIF";
 const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js";
 
 const INTERESTS = [

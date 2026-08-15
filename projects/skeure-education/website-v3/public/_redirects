@@ -1,3 +1,9 @@
 # Chitkara University removed from the partner list (2026-08-13). Redirect the
 # previously-indexed profile URL to the universities index instead of 404ing.
 /universities/chitkara-university-online/  /universities/  301
+
+# Online Manipal removed (2026-08-15). onlinemanipal.com markets three separate
+# awarding institutions (MAHE / MUJ / SMU) as one university; the profile was
+# never resolvable to a single entity, carried no courses, and was noindexed the
+# whole time it existed. Redirect rather than 404 in case the URL was ever linked.
+/universities/online-manipal-university/  /universities/  301

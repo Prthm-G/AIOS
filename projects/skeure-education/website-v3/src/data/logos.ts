@@ -35,7 +35,6 @@ export const universityLogos: Record<string, UniversityLogo> = {
 	// The uncropped original stays at /logos/amity.webp as the provenance record.
 	"amity-university-online": { src: "/logos/amity-crest.webp", provenance: "https://amityonline.com/ (official site logo, cropped to the crest)", isOfficial: true, showName: true },
 	"lovely-professional-university": { src: "/logos/lpu.png", provenance: "https://en.wikipedia.org/wiki/Lovely_Professional_University (Wikipedia infobox mirror of the official mark; official CDN blocks hotlinking)", isOfficial: true, showName: true },
-	"online-manipal-university": { src: "/logos/manipal.svg", provenance: "https://onlinemanipal.com/ (official site OM_Logo.svg)", isOfficial: true },
 	"chandigarh-university-online": { src: "/logos/chandigarh.webp", provenance: "https://www.cuchd.in/ (official site logo)", isOfficial: true },
 	"desh-bhagat-university": { src: "/logos/desh-bhagat.png", provenance: "https://deshbhagatuniversity.in/ (official site logo)", isOfficial: true },
 	"gla-university-online": { src: "/logos/gla.webp", provenance: "https://www.gla.ac.in/ (official site logo)", isOfficial: true },

@@ -11,9 +11,36 @@
   "observability": {
     "enabled": true
   },
-  // Deploys go to the `preview` environment only this task (never top-level /
-  // production). Bindings are NON-inheritable per environment, so anything the
-  // preview Worker needs is declared inside env.preview — nothing here leaks in.
+
+  // PRODUCTION lead store. Same database the live Astro site writes to, so the
+  // cutover does not split leads across two tables — the `leads` schema is
+  // already applied there (db/leads.sql is a record of it, not a migration to
+  // run). Without this binding the contact route accepts a submission and
+  // silently drops it: see src/app/api/contact/route.ts (`persisted: false`).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "skeure-leads",
+      "database_id": "a0ae43dd-59b1-4f6e-8ee6-3b6ef8bfad68"
+    }
+  ],
+
+  // NOTE: the Turnstile *sitekey* is deliberately NOT a var here. Next inlines
+  // NEXT_PUBLIC_* at build time, so a runtime Worker var never reaches the client
+  // bundle — it would look configured and silently do nothing. The real sitekey
+  // is the build-time default in src/components/contact/ContactForm.tsx; preview
+  // builds override it via the environment. The matching TURNSTILE_SECRET *is* a
+  // Worker secret (`wrangler secret put`), never a var and never in this file.
+
+  // CUTOVER STEP — intentionally left commented until the Pages project releases
+  // education.skeure.com. A Workers custom domain cannot claim a hostname that a
+  // Pages project still owns; deploying this early fails the whole deploy.
+  // Uncomment only at Phase 8, immediately after detaching the domain from the
+  // `skeure-education` Pages project.
+  // "routes": [{ "pattern": "education.skeure.com", "custom_domain": true }],
+
+  // Bindings are NON-inheritable per environment, so anything the preview Worker
+  // needs must be declared inside env.preview — nothing above leaks in.
   //
   // DB is deliberately left UNBOUND on preview: the contact route degrades to
   // { persisted: false } when env.DB is absent, so no preview submission can
