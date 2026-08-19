@@ -22,29 +22,15 @@ OpenSEO remains unauthenticated and GSC access has not been proven.
 1. `SEO-MARKETING-MASTER-PLAN.md` — strategy, launch gates, roadmap, hard guardrails
 2. `SKEURE-REBRAND-SEO-META-MASTER-PLAN.md` — cross-system rebrand, Auretris, social, SEO, and Meta ads sequence
 3. `GPT-5.6-SKEURE-EXECUTION-PROMPT.md` — reusable GPT-5.6 execution brief and approval gates
-4. `BRIDGE-SETUP-PLAN.md` — Claude↔Codex↔OpenSEO architecture
-5. `AGENTS.md` — shared operating rules for Claude, Codex, and delegated agents
-6. `CLAUDE.md` — Claude-specific session-start checklist and delegation workflow
-7. `/home/user/workspaces/AIOS/website-build/AGENTS.md` before changing the website
+4. `AGENTS.md` — shared operating rules for Claude and delegated agents
+5. `CLAUDE.md` — Claude-specific session-start checklist and workflow
+6. `/home/user/workspaces/AIOS/website-build/AGENTS.md` before changing the website
 
 ## Start each session
 
-```bash
-./bin/bridge-doctor
-```
+Confirm `openseo` authentication before relying on its data. If OpenSEO reports authentication needed, do not claim its data is available — use local/official sources or ask Pratham to authenticate.
 
-If OpenSEO reports authentication needed, do not claim its data is available — use local/official sources or ask Pratham to authenticate.
-
-## Commands
-
-```bash
-./bin/bridge-doctor                 # health check: tools, files, Codex/Claude OpenSEO auth
-./bin/codex-bridge ask ...          # read-only Codex analysis/second opinion
-./bin/codex-bridge review ...       # read-only Codex adversarial review
-./bin/codex-bridge implement ...    # Codex writes files (needs --allow-write, single-writer lock)
-```
-
-See `CLAUDE.md` for full delegation workflow and examples.
+See `CLAUDE.md` for the full workflow.
 
 ## Navigation
 
@@ -53,7 +39,6 @@ See `CLAUDE.md` for full delegation workflow and examples.
 | Strategy | `SEO-MARKETING-MASTER-PLAN.md` | Full audit, roadmap, guardrails, positioning |
 | Cross-system programme | `SKEURE-REBRAND-SEO-META-MASTER-PLAN.md` | DegreeCraft→Skeure rebrand, LPU Distance gate, social audit, SEO, attribution, and ads phases |
 | GPT-5.6 execution brief | `GPT-5.6-SKEURE-EXECUTION-PROMPT.md` | Reusable phase-by-phase prompt with safety and approval gates |
-| Bridge architecture | `BRIDGE-SETUP-PLAN.md` | How Claude/Codex/OpenSEO delegation works |
 | Operating rules | `AGENTS.md`, `CLAUDE.md` | Shared rules; Claude session workflow |
 | Decisions | `decisions/log.md` | Append-only durable-decision record |
 | Programme evidence | `evidence/programme-ledger.csv` | 81 programme records: 1 `verified`, 56 `stale`, 23 `unverified`, 1 `disputed` as of 28 July 2026 |
@@ -66,14 +51,14 @@ See `CLAUDE.md` for full delegation workflow and examples.
 | Keywords | `keywords/keyword-to-url-map.csv` | Primary-intent-to-URL map (metrics pending OpenSEO auth) |
 | Content | `content/strategy.md` | Evidence-backed content plan and what's blocked |
 | Reports | `reports/weekly/weekly-template.md`, `reports/monthly/monthly-template.md` | Operating cadence templates |
-| Bridge internals | `bin/bridge-doctor`, `bin/codex-bridge`, `bridge/SKILL-ROUTER.md`, `bridge/prompts/` | Delegation tooling |
+| Skill routing | `bridge/SKILL-ROUTER.md` | Deterministic project-skill selection |
 
 ## Known open items (see `decisions/log.md` for full detail)
 
 - **Documentation drift:** the live site contains remediation and later polish,
   while several 24–25 July status notes still say those changes are undeployed.
   Reconcile them against live state and current Git without erasing dated history.
-- **OpenSEO MCP:** not authenticated on either Claude or Codex side. Deferred by Pratham's choice as of 2026-07-25 — no GSC/keyword-research/competitive-landscape work has run yet.
+- **OpenSEO MCP:** not authenticated. Deferred by Pratham's choice as of 2026-07-25 — no GSC/keyword-research/competitive-landscape work has run yet.
 - **Google Search Console:** not connected for any property. Never claim otherwise.
 - **DegreeCraft migration:** inventoried and mapped, not activated. Current map:
   4 `ready`, 14 `hold-pending-verification`, 4 `rebuild-required`, and 2

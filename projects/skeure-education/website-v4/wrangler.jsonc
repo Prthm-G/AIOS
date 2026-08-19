@@ -1,0 +1,71 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "skeure-education-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets"
+  },
+  "observability": {
+    "enabled": true
+  },
+
+  // PRODUCTION lead store. Same database the live Astro site writes to, so the
+  // cutover does not split leads across two tables — the `leads` schema is
+  // already applied there (db/leads.sql is a record of it, not a migration to
+  // run). Without this binding the contact route accepts a submission and
+  // silently drops it: see src/app/api/contact/route.ts (`persisted: false`).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "skeure-leads",
+      "database_id": "a0ae43dd-59b1-4f6e-8ee6-3b6ef8bfad68"
+    }
+  ],
+
+  // NOTE: the Turnstile *sitekey* is deliberately NOT a var here. Next inlines
+  // NEXT_PUBLIC_* at build time, so a runtime Worker var never reaches the client
+  // bundle — it would look configured and silently do nothing. The real sitekey
+  // is the build-time default in src/components/contact/ContactForm.tsx; preview
+  // builds override it via the environment. The matching TURNSTILE_SECRET *is* a
+  // Worker secret (`wrangler secret put`), never a var and never in this file.
+
+  // PRODUCTION. A zone ROUTE, deliberately not a `custom_domain: true` entry.
+  //
+  // A custom domain makes wrangler provision its own DNS record, so it first
+  // demands that the zone's existing `CNAME education.skeure.com ->
+  // skeure-education.pages.dev` be deleted (it refuses with code 100117
+  // otherwise) — and deleting that needs Zone:DNS:Edit, which the deploy token
+  // does not have. Attempting that sequence on 2026-08-15 released the hostname
+  // from Pages, failed to claim it, and took the site down for ~2 minutes.
+  //
+  // A route needs none of that. Cloudflare matches it at the edge BEFORE the
+  // request is forwarded to the origin, so the Worker answers while the existing
+  // proxied CNAME and the Pages custom domain both stay exactly as they are.
+  // Nothing is released, so there is no window where the hostname points at
+  // something that cannot serve it.
+  //
+  // ROLLBACK: delete this route (dashboard, or DELETE
+  // /zones/{zone}/workers/routes/{id}). Pages resumes serving the Astro build the
+  // instant it is gone, because it never stopped being attached. Keep the
+  // `skeure-education` Pages project — it is the rollback target.
+  "routes": [{ "pattern": "education.skeure.com/*", "zone_name": "skeure.com" }],
+
+  // Bindings are NON-inheritable per environment, so anything the preview Worker
+  // needs must be declared inside env.preview — nothing above leaks in.
+  //
+  // DB is deliberately left UNBOUND on preview: the contact route degrades to
+  // { persisted: false } when env.DB is absent, so no preview submission can
+  // ever reach the production `skeure-leads` D1. TURNSTILE_SECRET is supplied at
+  // deploy time (use a Turnstile *test* secret for preview).
+  "env": {
+    "preview": {
+      "name": "skeure-education-web-preview",
+      "observability": {
+        "enabled": true
+      }
+    }
+  }
+}

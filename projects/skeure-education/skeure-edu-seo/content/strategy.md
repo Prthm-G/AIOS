@@ -23,7 +23,7 @@ The master plan's content workflow (seed keyword research → SERP-validated clu
 - Keyword clustering and cannibalization checks beyond the structural map already in `keywords/keyword-to-url-map.csv`
 - Competitive-landscape / competitor-analysis informed content gaps
 
-**Next session starting point:** authenticate OpenSEO MCP (both Claude and Codex sides — currently `AuthRequired`), run `seo-project-setup`, then `competitive-landscape`, then seed `keyword-research` per the families listed in `SEO-MARKETING-MASTER-PLAN.md` (MBA, MCA, BBA, BCA, B.Com, BA, UGC entitlement, validity, fees, comparisons, admissions, exams, refunds, Punjab counselling).
+**Next session starting point:** authenticate OpenSEO MCP (currently `AuthRequired`), run `seo-project-setup`, then `competitive-landscape`, then seed `keyword-research` per the families listed in `SEO-MARKETING-MASTER-PLAN.md` (MBA, MCA, BBA, BCA, B.Com, BA, UGC entitlement, validity, fees, comparisons, admissions, exams, refunds, Punjab counselling).
 
 ## First-wave information architecture (from the master plan, not yet built)
 

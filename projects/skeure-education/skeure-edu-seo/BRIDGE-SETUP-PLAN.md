@@ -1,4 +1,11 @@
-# Claude–Codex–OpenSEO Bridge Setup Plan
+# Claude–Codex–OpenSEO Bridge Setup Plan (retired)
+
+> **Retired 2026-08-16.** The ChatGPT plan ended and Codex was removed from this
+> machine, so the bridge described here no longer exists: `bin/codex-bridge`,
+> `bin/bridge-doctor`, the `codex-bridge` skill, the `codex-peer` agent, and
+> `.codex/config.toml` were all deleted. `.bridge/runs/` is kept as history.
+> This document remains as the design record of how the bridge worked. It is
+> not current operating guidance; see `CLAUDE.md` and `AGENTS.md` for that.
 
 **Created:** 24 July 2026  
 **Workspace:** `/home/user/workspaces/AIOS/skeure-edu-seo`  

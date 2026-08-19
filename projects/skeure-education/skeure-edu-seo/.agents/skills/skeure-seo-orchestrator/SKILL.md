@@ -1,6 +1,6 @@
 ---
 name: skeure-seo-orchestrator
-description: Run an evidence-led Skeure Education SEO workstream with Claude as the primary operator, OpenSEO as the shared live data layer, and Codex as an independent researcher, reviewer, or bounded implementer. Use for Skeure SEO sprints, audits, keyword research, content planning, migration work, analytics setup, regulatory fact checking, or website remediation that benefits from both models.
+description: Run an evidence-led Skeure Education SEO workstream with Claude as the primary operator and OpenSEO as the live data layer. Use for Skeure SEO sprints, audits, keyword research, content planning, migration work, analytics setup, regulatory fact checking, or website remediation.
 ---
 
 # Skeure SEO Orchestrator
@@ -16,10 +16,10 @@ Read `/home/user/workspaces/AIOS/skeure-edu-seo/SEO-MARKETING-MASTER-PLAN.md` an
    - `website-build` for production code and content.
    - `skeure-edu-seo` for evidence, strategy, briefs, and reports.
 3. Keep Claude as the conversation owner and primary coordinator.
-4. Use `$codex-bridge` for an independent pass when the task is material, ambiguous, high-risk, or includes code changes.
+4. Run an explicit adversarial pass over the draft when the task is material, ambiguous, high-risk, or includes code changes.
 5. Require human approval for final legal/finance language, factual publication, external messages, ads, redirects, deployment, and destructive actions.
 
-## Standard dual-model loop
+## Standard loop
 
 ### 1. Frame
 
@@ -45,26 +45,25 @@ Use the relevant OpenSEO skill:
 
 If OpenSEO authentication is unavailable, record the limitation and continue only with sources that are actually available. Never invent volume, difficulty, ranking, backlink, or GSC values.
 
-### 3. Delegate
+### 3. Challenge
 
-Use Codex read-only for:
+Run a separate read-only adversarial pass over the draft for:
 
-- adversarial review;
 - technical or content audit;
 - alternative keyword clustering;
 - migration-map review;
 - regulatory evidence challenge;
 - analytics-plan review.
 
-Use Codex write mode only for an approved, isolated implementation with explicit validation.
+State what would have to be true for the draft to be wrong, then check it.
 
 ### 4. Reconcile
 
-Claude compares the two outputs against primary evidence. Resolve disagreement by testing or sourcing, not by majority vote.
+Compare the challenge findings against primary evidence. Resolve disagreement by testing or sourcing, not by picking the more confident answer.
 
 ### 5. Implement and validate
 
-Keep one model as the writer and the other as the reviewer. Re-run deterministic checks from Claude before acceptance.
+Re-run deterministic checks before acceptance. Never accept the draft on the strength of the review alone.
 
 ### 6. Record
 

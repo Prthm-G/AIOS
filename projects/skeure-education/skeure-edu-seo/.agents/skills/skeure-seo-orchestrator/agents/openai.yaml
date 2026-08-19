@@ -1,4 +1,0 @@
-interface:
-  display_name: "Skeure SEO Orchestrator"
-  short_description: "Run Claude, Codex, and OpenSEO together"
-  default_prompt: "Use $skeure-seo-orchestrator to run the next evidence-led Skeure SEO workstream."

@@ -1,7 +1,13 @@
 {
-  "enabledPlugins": {
-    "claude-ads@ai-marketing-hub-claude-ads": true,
-    "fullstack-dev-skills@fullstack-dev-skills": true,
-    "ecc@ecc": true
+  "permissions": {
+    "allow": [
+      "Bash(hermes -p aios -z:*)",
+      "Bash(hermes -p aios status)",
+      "Bash(hermes -p aios cron list:*)",
+      "Bash(hermes kanban --board aios list:*)",
+      "Bash(hermes kanban --board aios show:*)",
+      "Bash(hermes kanban --board aios create:*)",
+      "Bash(hermes kanban --board aios comment:*)"
+    ]
   }
 }

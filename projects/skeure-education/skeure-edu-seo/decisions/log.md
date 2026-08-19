@@ -166,3 +166,32 @@ Pratham gave a 9-item punch list of visible website changes. Three intersected d
 - **Two judgement calls worth recording.** LPU's best Commons photo (`File:Admission-block-copy.jpg`, CC BY-SA 4.0) is claimed as the uploader's own work but is polished enough to raise a copyvio question; it has stood on Commons since 2016, so we rely on that licence in good faith, credit it in full, and note the basis in its `provenance` field. The alternative was an authentic but unflattering roadside snapshot. For Amity, the better-composed candidate carried a partially legible "ASIA'S ONLY UNIVERSITY WITH … UK … ATION" banner in-frame; rejected it in favour of a cleaner shot rather than republish an unverified marketing claim as image content.
 
 **Verified:** `astro check` 0 errors, `tsc` clean, 25 pages built (24 + `/credits/`), checked at 1440px and 390px with no horizontal overflow. **Not deployed** — local commit only, consistent with the standing boundary above.
+
+---
+
+## 2026-08-16 — Codex bridge retired
+
+The ChatGPT plan ended, so GPT-5.6 Sol / Codex calls no longer work anywhere on
+this machine. Codex was removed machine-wide, and this project's bridge went with
+it.
+
+**Removed:** `bin/codex-bridge`, `bin/bridge-doctor`, `.agents/skills/codex-bridge/`
+(and its `.claude/skills/` symlink), `.claude/agents/codex-peer.md`,
+`.codex/config.toml`, `bridge/prompts/`, the orchestrator's `agents/openai.yaml`
+binding, and the bridge permission entries in `.claude/settings.json`.
+
+**Kept:** `.bridge/runs/` as the audit trail of past handoffs, and
+`BRIDGE-SETUP-PLAN.md` as the design record, both marked historical.
+`evidence/claims-register.csv` and the dated audits still credit Codex adversarial
+review for the CLM-015 and CLM-016 findings, which is what actually happened.
+
+**Replacement:** Claude is the sole operator. Where the bridge supplied an
+independent second model, the operating docs now require an explicit adversarial
+pass over the draft before material work is accepted: state what would have to be
+true for the conclusion to be wrong, then check it against primary sources, code,
+or tests. This is weaker than a genuinely independent model and should be treated
+as such on high-risk factual work.
+
+**Left alone:** `GPT-5.6-SKEURE-EXECUTION-PROMPT.md`. It is a phase-by-phase
+execution brief with approval gates that no longer has a model to run on. Worth
+repurposing for Claude or archiving, but that is a separate call.

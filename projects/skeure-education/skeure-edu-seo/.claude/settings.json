@@ -1,14 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(./bin/bridge-doctor *)",
-      "Bash(./bin/codex-bridge status *)",
-      "Bash(./bin/codex-bridge ask *)",
-      "Bash(./bin/codex-bridge review *)"
-    ],
-    "deny": [
-      "Bash(codex --dangerously-bypass-approvals-and-sandbox *)",
-      "Bash(codex * --dangerously-bypass-approvals-and-sandbox *)"
-    ]
+    "allow": [],
+    "deny": []
   }
 }

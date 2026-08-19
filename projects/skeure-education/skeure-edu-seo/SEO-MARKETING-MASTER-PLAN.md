@@ -16,8 +16,8 @@ The recommended operating model is:
 1. Use `website-build` for code, content implementation, testing, and deployment.
 2. Use `skeure-edu-seo` for strategy, evidence, keyword data, briefs, reports, outreach, and operating history.
 3. Use the hosted OpenSEO plan for live keyword, SERP, backlink, rank-tracking, site-audit, AI-visibility, and Search Console data.
-4. Connect the same OpenSEO MCP project to Claude and Codex.
-5. Use Claude primarily for repository implementation and Codex primarily for independent audits, research, adversarial review, and verification. Either may implement, but the model that writes a change should not be its only reviewer.
+4. Connect the OpenSEO MCP project to Claude.
+5. Use Claude for repository implementation, and run an explicit adversarial pass over material work before accepting it. A draft is never accepted on its own confidence.
 6. Require human approval for factual education claims, legal text, finance text, redirects, production deployment, outreach, and paid advertising.
 
 SEO alone is unlikely to produce the full September admissions target from a nearly invisible new brand in roughly two months. The first 68 days should combine SEO foundations with local search, partner proof, high-intent paid search after remediation, WhatsApp follow-up, referral activation, webinars, and remarketing.
@@ -31,7 +31,7 @@ SEO alone is unlikely to produce the full September admissions target from a nea
 - Keyword research, content architecture, content production, internal linking, local SEO, digital PR, and ethical link acquisition.
 - Google Search Console, Bing Webmaster Tools, analytics, consent, lead attribution, and conversion reporting.
 - Brand entity, Google Business Profile, reviews, social proof, local authority, partnerships, and multi-channel content distribution.
-- Claude, Codex, installed skills/agents, and OpenSEO MCP orchestration.
+- Claude, installed skills/agents, and OpenSEO MCP orchestration.
 
 ### Out of scope without separate expert approval
 
@@ -228,10 +228,9 @@ After subscribing and creating the Skeure project:
 
 ```bash
 claude mcp add --transport http --scope user openseo https://app.openseo.so/mcp
-codex mcp add openseo --url https://app.openseo.so/mcp
 ```
 
-Approve the browser login for each client. Verify with read-only `whoami` and `list_projects`. Never claim OpenSEO or Search Console is connected until these calls succeed.
+Approve the browser login. Verify with read-only `whoami` and `list_projects`. Never claim OpenSEO or Search Console is connected until these calls succeed.
 
 Connect Google Search Console for:
 
@@ -240,13 +239,12 @@ Connect Google Search Console for:
 
 Retain both during migration. The old property reveals URLs, queries, and links worth preserving.
 
-### OpenSEO skills to install in both Claude and Codex
+### OpenSEO skills to install
 
 Run from `skeure-edu-seo`:
 
 ```bash
 npx skills add every-app/open-seo --skill '*' --agent claude-code
-npx skills add every-app/open-seo --skill '*' --agent codex
 ```
 
 The current repository exposes these public workflows:
@@ -325,9 +323,15 @@ Use only the relevant subset:
 
 Most of the 48 local skills are unrelated to this project and should not be loaded into every task.
 
-## Codex installed and marketplace capability plan
+## Capability plan (historical Codex catalog)
 
-### Installed Codex skills to use
+> **Superseded 2026-08-16.** The ChatGPT plan ended and the Codex install was
+> removed from this machine, so the skill catalog in the table below is no
+> longer available. The workstream decomposition and the constraints under it
+> are still the operating guidance; source equivalent coverage from Claude
+> skills or do the work directly.
+
+### Workstreams and the skills they used
 
 | Workstream | Installed skills |
 |---|---|
@@ -349,9 +353,9 @@ Important constraints:
 - `seo-dataforseo` is redundant when the OpenSEO subscription/MCP supplies the same data. Avoid paying twice.
 - `social-proof-architect` may optimize placement only after the proof itself is genuine and sourced.
 
-### Codex agent roles
+### Independent reviewer roles
 
-Codex should spawn bounded, independent reviewers rather than one “do everything” agent:
+Spawn bounded, independent reviewers rather than one “do everything” agent:
 
 1. **Technical SEO auditor:** crawl/indexation, rendering, canonicals, schema, performance.
 2. **Regulatory fact checker:** UGC-DEB, official university sources, finance-claim evidence.
@@ -708,7 +712,7 @@ Do not stop at an audit if a safe local fix is possible. Do stop before claims t
 
 # Master Prompt 2: set up and operate `skeure-edu-seo`
 
-Run this in a fresh Claude or Codex session from:
+Run this in a fresh Claude session from:
 
 ```bash
 cd /home/user/workspaces/AIOS/skeure-edu-seo
@@ -742,7 +746,7 @@ First verify capabilities:
 2. If missing, install them for the active agent using the official every-app/open-seo skill installer. Do not overwrite custom project files.
 3. Check OpenSEO MCP using only whoami and list_projects. Use the returned opaque project ID exactly. If authentication is required, pause only for the login and continue after it succeeds.
 4. Confirm whether Google Search Console is connected for skeure.com/education.skeure.com and degreecraft.com. Never claim it is connected unless the MCP call proves it.
-5. Inventory available installed Claude/Codex skills and agents named in this master plan. Use only direct fits.
+5. Inventory available installed Claude skills and agents named in this master plan. Use only direct fits.
 
 Create the workspace structure defined in SEO-MARKETING-MASTER-PLAN.md. Preserve the master plan. Add:
 - README.md with purpose, current phase, owners, commands, and navigation
@@ -776,15 +780,10 @@ Claude-specific preferred agents when available:
 - ui-ux-tester
 - code-reviewer for changes to workspace scripts/templates
 
-Codex-specific preferred installed skills:
-- seo-audit and seo-technical
-- seo-aeo-keyword-research and seo-aeo-content-cluster
-- seo-aeo-content-quality-auditor
-- seo-aeo-internal-linking
-- schema-markup
-- analytics-tracking
-- ux-audit and accessibility-compliance-accessibility-audit
-- marketing-plan
+Coverage the retired Codex catalog used to provide, still required from whatever
+tooling is available: technical/indexation audit, AEO keyword research and content
+clustering, content-quality audit, internal linking, schema markup, analytics
+tracking, UX and accessibility audit, and marketing planning.
 
 OpenSEO workflow:
 1. Run seo-project-setup and record the project context.

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hermes": {
+      "command": "/home/user/.local/bin/hermes",
+      "args": ["-p", "aios", "mcp", "serve"]
+    }
+  }
+}

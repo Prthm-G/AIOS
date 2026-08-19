@@ -1,6 +1,6 @@
 # Skeure Education SEO — shared agent rules
 
-These instructions apply to Claude, Codex, and delegated agents working in this directory.
+These instructions apply to Claude and delegated agents working in this directory.
 
 ## Purpose
 
@@ -9,16 +9,14 @@ Maintain an evidence-led SEO and marketing operating system for `education.skeur
 ## Required context
 
 - Read `SEO-MARKETING-MASTER-PLAN.md` for strategy and launch gates.
-- Read `BRIDGE-SETUP-PLAN.md` for the Claude–Codex architecture.
 - Read the closest nested instructions before editing another repository.
 - Preserve existing user changes and inspect Git status before broad work.
 
 ## Model roles
 
-- Claude is the default conversation owner and orchestrator.
-- Codex is a peer researcher, reviewer, or bounded implementer.
-- The writer cannot be the only reviewer for material code, claims, migration, or measurement changes.
-- Do not recursively invoke the other model.
+- Claude is the conversation owner, operator, and final coordinator.
+- Material code, claims, migration, or measurement changes require an explicit
+  adversarial pass over the drafted output before it is reported as done.
 - Do not run concurrent writers on overlapping files.
 
 ## Skill locations
@@ -26,12 +24,11 @@ Maintain an evidence-led SEO and marketing operating system for `education.skeur
 - Shared project skills: `.agents/skills/`
 - Claude links: `.claude/skills/`
 - OpenSEO data: MCP server named `openseo`
-- Bridge entry point: `./bin/codex-bridge`
 - Deterministic skill selection: `bridge/SKILL-ROUTER.md`
 
 Use a relevant skill when named or directly applicable. Do not substitute a similarly named global skill when the project skill is more specific.
-The global Codex skill catalog is intentionally not the routing source: it is too large
-for reliable automatic inclusion. Bridge prompts explicitly name the project skill files.
+The machine-wide skill catalog is intentionally not the routing source: it is too large
+for reliable automatic inclusion. Name the project skill files explicitly.
 
 ## Evidence rules
 
@@ -51,17 +48,16 @@ for reliable automatic inclusion. Bridge prompts explicitly name the project ski
 - `analytics/`: measurement plan, events, and dashboard definitions.
 - `reports/`: weekly/monthly outcomes.
 - `decisions/`: durable decisions and rationale.
-- `.bridge/runs/`: temporary model handoffs; ignored by Git.
+- `.bridge/runs/`: historical model handoff logs from the retired bridge; ignored by Git.
 
 ## Validation
 
 For this workspace:
 
-```bash
-./bin/bridge-doctor
-python3 /home/user/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/codex-bridge
-python3 /home/user/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/skeure-seo-orchestrator
-```
+Confirm the project skills still resolve and that `openseo` authentication is
+current before relying on its data. The former `bin/bridge-doctor` and the
+`quick_validate.py` script it called both lived on the retired Codex install and
+are gone.
 
 For website changes, follow `/home/user/workspaces/AIOS/website-build/AGENTS.md` and run at minimum:
 
@@ -78,4 +74,4 @@ Add crawl, schema, link, responsive, accessibility, form, and performance checks
 - External messages, outreach, review requests, ad spend, or purchases
 - Destructive Git/filesystem operations
 - Secrets or student PII in prompts, logs, analytics, or repository files
-- Permission bypass or `danger-full-access` for the Codex bridge
+- Permission bypass or full-access sandbox modes for any delegated agent

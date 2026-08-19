@@ -1,4 +1,0 @@
-interface:
-  display_name: "Codex Bridge"
-  short_description: "Delegate and review work with Codex safely"
-  default_prompt: "Use $codex-bridge to ask Codex for an independent review of this task."

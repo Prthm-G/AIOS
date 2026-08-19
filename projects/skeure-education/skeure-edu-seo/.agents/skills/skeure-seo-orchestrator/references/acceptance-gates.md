@@ -29,10 +29,10 @@
 
 ## Model assignment
 
-| Work | Primary | Peer |
+| Work | Primary | Check |
 |---|---|---|
-| User conversation and orchestration | Claude | Codex review |
-| OpenSEO workflow | Claude | Codex challenge |
-| Repository implementation | Either | The other model |
-| Regulatory facts | Official sources + human owner | Both models independently |
-| Final legal/finance approval | Qualified human | Models assist only |
+| User conversation and orchestration | Claude | Explicit adversarial pass |
+| OpenSEO workflow | Claude | Explicit adversarial pass |
+| Repository implementation | Claude | Deterministic checks re-run before acceptance |
+| Regulatory facts | Official sources + human owner | Primary-source verification, never model agreement |
+| Final legal/finance approval | Qualified human | Model assists only |
