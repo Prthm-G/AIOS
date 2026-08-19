@@ -28,9 +28,13 @@ with `?jump=<fraction>` once `window.__ready === true`.
 The Skeure Education marketing site. Next.js 15 (App Router) → OpenNext → Cloudflare Workers,
 serving [education.skeure.com](https://education.skeure.com).
 
-Supersedes `../website-build` (Astro on Cloudflare Pages), which remains in place as the rollback
-target and the original data source. `../WEBSITE-V3-KICKOFF.md` and `HANDOFF-INTERIOR-PAGES.md` are
-historical — both predate the move to Next.js and describe an Astro build that was never shipped.
+Supersedes `../website-build` (Astro on Cloudflare Pages), which was the original data source.
+**That directory has since been deleted — it is no longer a rollback target.** Recover it from AIOS
+git history if its Astro sources are ever needed. Rolling production back now means deleting the
+Cloudflare Worker route (see `wrangler.jsonc`), which returns serving to Pages.
+`../WEBSITE-V3-KICKOFF.md` and `HANDOFF-INTERIOR-PAGES.md` are historical — both predate the move to
+Next.js and describe an Astro build that was never shipped, and their `../website-build/...` paths
+no longer resolve.
 
 ## Stack
 

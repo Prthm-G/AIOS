@@ -5,9 +5,15 @@
 __pycache__/
 node_modules/
 .claude/settings.local.json
-audits/
+# Rooted deliberately. A bare `audits/` matched at any depth and silently
+# swallowed projects/skeure-education/skeure-edu-seo/audits/ — three audit
+# reports were lost to it on 2026-08-19. Keep the leading slash.
+/audits/
 website-build/
-projects/skeure-education/ad-manager/
+# ad-manager was archived to archives/ 2026-08-19 when it was folded into
+# skeure-growth. It is its own nested git repo and carries a live Meta
+# system-user token, so it stays out of this repo at the new path too.
+archives/ad-manager-2026-08-19/
 
 # manus is its own git repo (multi-tenant WhatsApp platform, node_modules +
 # generated seed manifests would otherwise flood the AIOS root repo)

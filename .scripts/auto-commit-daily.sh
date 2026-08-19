@@ -1,8 +1,9 @@
 #!/bin/bash
 # AIOS root repo -- daily end-of-day auto-commit. Local cron job, not a cloud agent.
-# Scope: /home/user/workspaces/AIOS only. Nested project repos (ad-manager/,
-# website-build/) are independently git-managed and are NOT touched by this --
-# they're committed manually/explicitly during working sessions.
+# Scope: /home/user/workspaces/AIOS only. Nested project repos (website-v3/,
+# website-v4/, archives/ad-manager-2026-08-19/) are independently git-managed and
+# are NOT touched by this -- they're committed manually/explicitly during
+# working sessions.
 #
 # Never pushes to any remote. Local commit only.
 set -euo pipefail

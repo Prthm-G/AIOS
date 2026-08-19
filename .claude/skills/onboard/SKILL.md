@@ -49,15 +49,18 @@ assume the AIOS root branch applies.
 
 | Path | What it is |
 |---|---|
-| `projects/skeure-education/website-build` | Main marketing site. Has its own `AGENTS.md` — the single source of truth for frontend design routing. `CLAUDE.md` there is a symlink to it. |
-| `projects/skeure-education/website-v2` | Rebuild. Astro + vanilla CSS. |
-| `projects/skeure-education/website-v3` | Newer rebuild. Does **not** inherit `website-build`'s `AGENTS.md`. |
+| `projects/skeure-education/website-v3` | **LIVE.** Serves `education.skeure.com` (Next.js 15 → OpenNext → Cloudflare Workers). This is production. |
+| `projects/skeure-education/website-v4` | Built, **not cut over**. "THE LONG OPEN" film homepage; same `wrangler.jsonc` route as v3, so deploying it replaces production. |
+| `projects/skeure-education/skeure-growth` | **SEO + paid Meta + measurement, unified.** Replaced `skeure-edu-seo` and absorbed `ad-manager` on 2026-08-19. Read its `CLAUDE.md` first. |
 | `projects/skeure-education/auretris` | Auretris project notes + its own `decisions/log.md`. |
-| `projects/skeure-education/ad-manager` | Ad management. |
-| `projects/skeure-education/skeure-edu-seo` | SEO work. |
 | `projects/skeure-finance/finance-v2` | NBFC. Real financial data — never quote figures outward, never commit it here. |
 | `projects/manus` | Multi-tenant WhatsApp platform. Its own git repo, gitignored from AIOS. |
 | `/home/user/automation_stack` | **Production.** Auretris (WhatsApp bot, Meta Cloud API) in `wacrm/`, plus brochures, Postgres FAQ DB, n8n, `auretris-site`. Holds live Meta system-user tokens. |
+
+Gone or archived, so do not go looking: `website-build` (deleted — was the Astro
+site v3 replaced), `website-v2` (superseded), `ad-manager` (folded into
+`skeure-growth`, archived at `archives/ad-manager-2026-08-19/`), and
+`skeure-edu-seo` (deleted 2026-08-19, recoverable from commit `fbb3469`).
 
 **5. Conditional reads** — only when the request touches them:
 
