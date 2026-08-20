@@ -121,3 +121,23 @@ Keep it terse. Future-you will thank present-you for capturing the *why*, not ju
 **Alternatives considered:** Archive the evidence CSVs and wipe the rest (offered — the programme ledger and claims register are real research that cost real time). Pratham chose the full wipe after that trade was stated; git history makes it recoverable, which is what made the choice safe. Keep organic and paid separate (rejected — the split was the reason neither had a shared number). Reuse the Auretris production WhatsApp app for the ads MCP OAuth (rejected — that app holds live Cloud API credentials, and widening its scopes to `ads_management` + `catalog_management` mixes revocation and blast radius for no gain; a new dedicated app costs one dashboard flow).
 
 **Owner:** Pratham. Open at time of writing: the live ad account ID is his to supply — the July record `act_1056790306735632` is treated as unverified until the connector enumerates what the new app can actually reach. The two Meta identities stay deliberately separate: the ads MCP authenticates as the identity owning the ad account, the devtools MCP as the Auretris developer identity.
+
+## 2026-08-20 · Deleted `website-v4`; Meta connectors live; paid delivery found silently halted
+
+**Decision:** Deleted `projects/skeure-education/website-v4` at Pratham's instruction. Recoverable in
+full from commit `6662c7e` (182 tracked files). Checked for unrecoverable content first, applying the
+lesson from the 2026-08-19 audits loss: only `.dev.vars` and `next-env.d.ts` sat outside git, the
+former byte-identical to `website-v3`'s and containing only Cloudflare's public Turnstile *test*
+secret, the latter auto-generated. Nothing unique was lost. `website-v3` remains live and is now the
+only site build.
+
+**Also settled:** all three Meta connectors are wired (`meta-ads` MCP, `meta-devtools` MCP, Ads CLI
+v1.1.0). The operating ad account is `act_961766249917785` under business `1593889128670416`,
+reversing the July record. Delivery on it is halted: the prepaid balance is ₹0 and `spend_cap`
+equals `amount_spent` exactly, so an ACTIVE campaign has spent nothing since 8 August while showing
+healthy in Ads Manager. ₹24,998 has been spent lifetime with no conversion tracking of any kind.
+Full detail in `projects/skeure-education/skeure-growth/decisions/log.md` and
+`skeure-growth/paid/BASELINE-2026-08-20.md`.
+
+**Owner:** Pratham. The spend-cap and top-up calls are his, and the recommendation on record is to
+hold until measurement exists.

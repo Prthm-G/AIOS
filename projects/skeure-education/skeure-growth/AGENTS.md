@@ -54,8 +54,8 @@ cd ../website-v3 && npm run build && npx tsc --noEmit
 ```
 
 Add crawl, schema, link, responsive, accessibility, form, and performance checks according to risk.
-`../website-v4` shares the same Cloudflare route: deploying it replaces production. Never deploy
-either without explicit approval.
+`website-v4` was deleted 2026-08-20, so `website-v3` is the only build. Never deploy it without
+explicit approval.
 
 ## Prohibited without explicit approval
 

@@ -3,14 +3,18 @@
 Three connectors, two Meta identities, one dashboard flow that only Pratham can do. Work top to
 bottom. Every command here is copy-pasteable.
 
-**Status: not started.** Update the checkboxes as you go; this file is the record of what is
-actually wired.
+**Status: COMPLETE as of 2026-08-20.** All five steps done and verified live.
 
-- [ ] 1. Dedicated Skeure ads app created
-- [ ] 2. `meta-ads` MCP connected
-- [ ] 3. `meta-devtools` MCP connected
-- [ ] 4. Ads CLI installed and authenticated
-- [ ] 5. Live ad account confirmed and recorded
+- [x] 1. Dedicated Skeure ads app created
+- [x] 2. `meta-ads` MCP connected
+- [x] 3. `meta-devtools` MCP connected
+- [x] 4. Ads CLI installed (v1.1.0) and authenticated
+- [x] 5. Live ad account confirmed: `act_961766249917785`, business portfolio `1593889128670416`
+
+> **Note on MCP tool availability.** `claude mcp list` shows both servers connected, but MCP tools
+> register at session start. A session that was already running when the servers were added will not
+> see `meta-ads` / `meta-devtools` tools. Start a fresh session to use them. The Ads CLI works
+> immediately either way, which is how the 2026-08-20 baseline was pulled.
 
 ---
 
@@ -39,8 +43,9 @@ This is the only step that can't be scripted.
 2. Name it something unmistakable: `Skeure Ads Connector`.
 3. Business portfolio: the one that **owns the ad account** (not the Auretris portfolio).
 4. Add the use case: **"Create & manage ads with ads MCP server"**.
-5. Under **Facebook Login for Business** → Settings, add the redirect URI the ads MCP requires. The
-   MCP's OAuth flow will tell you the exact value if it isn't pre-filled; add it verbatim.
+5. **No redirect URI needed.** The published guide asks for one, but the ads MCP OAuth flow
+   completed without any redirect URL configured in Facebook Login settings. Confirmed 2026-08-20.
+   Skip this step; only revisit it if OAuth starts failing with a redirect mismatch.
 6. Request these permissions:
 
    ```
@@ -126,17 +131,18 @@ meta auth status
 
 ## 5. Confirm the live ad account
 
-The July-2026 record says `act_1056790306735632` ("skeure-education", INR, Asia/Kolkata) with a
-legacy `961766249917785` ("DegreeCraft") alongside it. Treat both as unverified. That record is
-over a month old, and the DegreeCraft account's status was observed flipping twice in a single day.
+**Done 2026-08-20.** `meta ads adaccount list` returned two accounts, both ACTIVE, both INR /
+Asia/Kolkata:
 
-```bash
-meta ads adaccount list
+```
+act_961766249917785   DegreeCraft       ← the operating account
+act_1056790306735632  skeure-education  ← empty, zero campaigns
 ```
 
-Record the confirmed ID in `.env` as `AD_ACCOUNT_ID`, and note the decision in `decisions/log.md`
-with the date it was verified. That becomes the workspace's single recorded fact about the account, and
-everything downstream reads it from there rather than re-deriving it.
+The July record had these backwards. `act_961766249917785` carries all 12 campaigns and every rupee
+of the ₹24,998 lifetime spend; the account named "skeure-education" has never run anything. Its name
+is stale branding, not a reason to switch. Recorded in `.env` as `AD_ACCOUNT_ID`. See
+`paid/BASELINE-2026-08-20.md`.
 
 ---
 
@@ -156,3 +162,208 @@ be labelled as one.
 - **Meta's own docs 500** → they were doing this on 2026-08-19. The endpoint URLs in this file were
   verified live by direct probe (both returned HTTP 401 to an unauthenticated call, i.e. they exist
   and want auth), and the devtools config was recovered from this machine's own pre-reset backup.
+
+---
+
+# Adding the LPU ad account (different Facebook identity)
+
+A third ad account runs LPU-only campaigns with useful historical performance. It sits under a
+**different Facebook identity and a different business portfolio** from everything above.
+
+## What is true right now
+
+Verified 2026-08-20 against the Graph API:
+
+- The working token is a `SYSTEM_USER` token, non-expiring, app `1594261842053152`, scopes
+  `ads_management`, `ads_read`, `business_management`, `catalog_management`, `pages_show_list`,
+  `instagram_basic`.
+- It belongs to business `1593889128670416`, which **owns** exactly two ad accounts:
+  `act_961766249917785` and `act_1056790306735632`.
+- `client_ad_accounts` on that business is **empty**. Nothing from an outside business has ever been
+  shared in.
+
+So the LPU account is invisible to the current credentials. It needs either an access grant or its
+own credentials.
+
+## Decide first: what do you actually want from it?
+
+| Goal | Access needed |
+|---|---|
+| Read its performance, learn what worked, copy structure and creative | **View-level only.** Cheapest and safest. |
+| Run or edit campaigns in it | Manage-level |
+| Reuse its audiences or pixel signal inside the Skeure account | Asset-level sharing, which is separate from account access |
+
+Most of the value in "proven data" is the first row. Prefer View-level unless there is a reason not
+to.
+
+## Path A · Partner-share it into the existing business (recommended)
+
+Keeps one token, one `.env`, one CLI config. Nothing else in this workspace changes.
+
+**On the business that OWNS the LPU account:**
+
+1. Business Settings → **Partners** → Add → *give a partner access to your assets*.
+2. Enter partner business ID `1593889128670416`.
+3. Select the LPU ad account.
+4. Grant **View performance** (or Manage campaigns only if you intend to run ads from here).
+
+**Then on business `1593889128670416`:**
+
+5. Business Settings → **Users → System users** → select the existing system user.
+6. **Add assets** → Ad accounts → the newly shared LPU account → same permission level.
+
+**Verify, no new credentials needed:**
+
+```bash
+cd /home/user/workspaces/AIOS/projects/skeure-education/skeure-growth
+AD_ACCOUNT_ID=<LPU_ACCOUNT_ID> meta ads adaccount get <LPU_ACCOUNT_ID>
+AD_ACCOUNT_ID=<LPU_ACCOUNT_ID> meta ads campaign list --limit 25 --fields name,status,objective
+AD_ACCOUNT_ID=<LPU_ACCOUNT_ID> meta ads insights get --date-preset last_90d
+```
+
+It should also start appearing in `client_ad_accounts`:
+
+```bash
+set -a; . ./.env; set +a
+curl -s -G "https://graph.facebook.com/v21.0/1593889128670416/client_ad_accounts" \
+  --data-urlencode "fields=id,name,account_status" \
+  --data-urlencode "access_token=$ACCESS_TOKEN" | python3 -m json.tool
+```
+
+**Known caveat.** Meta documents an "Account Sharing Limitation": unless you are a verified agency,
+a business portfolio can generally only manage accounts owned by the same company that owns the
+portfolio. Whether that blocks this specific share depends on how both portfolios are registered.
+The Help Center pages are JavaScript-rendered and could not be read programmatically on 2026-08-20,
+so this was not confirmed in detail. If the share is refused, use Path B.
+
+## Path B · Separate credentials for that identity
+
+Use when partner sharing is blocked, or when the two identities should stay completely separate.
+
+1. In the business that owns the LPU account: **Users → System users → Add**, admin or employee.
+2. Assign it the LPU ad account with the permission level chosen above.
+3. That business needs an app to mint the token against. Either add app `1594261842053152` to it, or
+   create a second app there. A system user token is generated per business-and-app pair, so the app
+   must be present in that business.
+4. Generate the token with `ads_read` (add `ads_management` only if writing).
+5. Store it in a **second** env file, never mixed into the main one:
+
+```bash
+cp .env.example .env.lpu        # add .env.lpu to .gitignore first
+# fill in ACCESS_TOKEN and AD_ACCOUNT_ID for the LPU account only
+```
+
+Run the CLI against it per-command, leaving the default account untouched:
+
+```bash
+env $(grep -v '^#' .env.lpu | xargs) meta ads insights get --date-preset last_90d
+```
+
+## Path C · A second MCP connection as the other identity
+
+Fastest route to conversational analysis, and it does not touch the token setup at all.
+
+```bash
+claude mcp add --transport http --client-id 1594261842053152 meta-ads-lpu https://mcp.facebook.com/ads
+```
+
+Authorize in a browser **logged in as the LPU Facebook identity**, not the Skeure one.
+
+**Caveat, unverified.** If `Skeure Ads Connector` is in Development mode, only people holding a role
+on the app (admin, developer, or tester) can authorize it. The app's mode could not be read this
+session because MCP tools register at session start and the servers were added mid-session. If OAuth
+fails, either add that identity as a tester on the app, or switch the app to Live, or create a
+separate app under the LPU business and pass its ID as `--client-id`.
+
+## What transfers between accounts, and what does not
+
+This is the part that decides how much the "proven data" is really worth.
+
+| Asset | Moves across accounts? |
+|---|---|
+| Campaign structure, targeting, budgets, schedules | Yes, by reading and rebuilding. Trivial once you have View access. |
+| Ad creative and copy | Yes, same way. |
+| Custom audiences and lookalikes | Yes, but by a **separate** audience-sharing action in Business Settings, not by account access. Verify at the time. |
+| Pixel / dataset and its event history | Yes, shareable as its own asset. |
+| **Delivery optimization and learning history** | **No.** A new campaign in a different ad account re-enters the learning phase regardless of what the source account learned. |
+| Account-level spend and delivery track record | No. Not portable. |
+
+So treat the LPU account as a **research and creative source**, not as something whose performance
+can be transplanted. What you take from it is the knowledge of which programmes, audiences, hooks,
+and objectives produced results, plus the reusable creative and audience definitions.
+
+## RESOLVED 2026-08-20: it is a personal ad account, `act_278258370`
+
+It is not under any business portfolio. That is exactly why "add to assets" fails: a personal ad
+account is not a business asset, so there is nothing for Business Settings to assign.
+
+Probed live with the current system-user token:
+
+```
+GET /v21.0/act_278258370
+  (#200) Ad account owner has NOT grant ads_management or ads_read permission
+```
+
+The account is real and reachable; what is missing is a **permission grant from the account owner**,
+not an asset assignment. Paths A and B above assumed a business-owned account and do not apply.
+
+### Option A: grant a role on the ad account (recommended, reversible, ~2 minutes)
+
+Give the Facebook identity that already authorized the `meta-ads` MCP a role on the personal
+account. No claiming, no business involvement, undo any time by removing the role.
+
+1. Log in as the Facebook identity that **owns** `act_278258370`.
+2. Open the ad account's role settings:
+   `https://business.facebook.com/ads/manager/account_settings/account_roles/?act=278258370`
+   (or Ads Manager → Settings → Ad account roles)
+3. **Add people** → enter the Facebook identity used to authorize `meta-ads`.
+4. Role: **Analyst** for view-only performance access. Advertiser or Admin only if ads will be
+   created or edited from here. Analyst is enough to mine the historical data.
+5. Accept the invitation from the receiving identity if prompted.
+
+**Verify in a fresh session** (MCP tools register at session start): ask the `meta-ads` server to
+list ad accounts. `act_278258370` should now be among them.
+
+**The CLI will not see it.** `ACCESS_TOKEN` is a system-user token scoped to business
+`1593889128670416`, and system users cannot hold roles on a personal ad account. MCP yes, CLI no.
+Use Option B if scripted access is needed.
+
+### Option B: long-lived user token, for CLI and scripted access
+
+Only needed if the LPU data must be pulled by script rather than conversationally.
+
+1. Complete Option A first, so the identity has a role.
+2. Graph API Explorer → app `Skeure Ads Connector` → log in as that identity → request `ads_read`
+   → generate token.
+3. Exchange it for a long-lived token:
+
+```bash
+curl -s -G "https://graph.facebook.com/v21.0/oauth/access_token" \
+  -d grant_type=fb_exchange_token \
+  -d client_id=1594261842053152 \
+  --data-urlencode "client_secret=$META_APP_SECRET" \
+  --data-urlencode "fb_exchange_token=$SHORT_LIVED_TOKEN"
+```
+
+4. Store in `.env.lpu` (add it to `.gitignore` first) with `AD_ACCOUNT_ID=278258370`.
+
+**This token expires in about 60 days**, unlike the non-expiring system-user token. Anything built
+on it needs a refresh reminder.
+
+### Option C: claim the account into the business
+
+Puts it fully under business `1593889128670416`, so the existing system user and the CLI both work
+with no second credential. Business Settings → Accounts → Ad accounts → Add → **Claim an ad
+account** → enter `278258370`.
+
+**Treat this as one-way.** Meta's help pages are JavaScript-rendered and the current rule could not
+be read programmatically on 2026-08-20, but claiming an ad account into a business portfolio is
+generally not reversible: the paths Meta documents are deactivation or ownership transfer, not
+removal. Billing also moves to the business. Do not take this route just to read historical data;
+Option A gets that for free and can be undone.
+
+## What is needed to proceed
+
+- Confirm which option to take. Option A unless scripted access is required.
+- For Option A, the Facebook identity used to authorize `meta-ads`, so the right account gets the
+  role grant.

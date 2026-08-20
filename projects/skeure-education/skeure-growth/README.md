@@ -45,8 +45,7 @@ first-party data, then paid. Anything else optimizes numbers nobody can see.
 
 | Path | What |
 |---|---|
-| `../website-v3` | **Live.** Serves `education.skeure.com`. |
-| `../website-v4` | Built, not cut over. Shares v3's route, so deploying it replaces production. |
+| `../website-v3` | **Live.** Serves `education.skeure.com`. The only site build; `website-v4` was deleted 2026-08-20. |
 | `../auretris` | Auretris project notes. Owns the WhatsApp conversation the funnel ends in. |
 | `/home/user/automation_stack` | **Production.** Auretris WhatsApp bot + Kuanli CRM. Holds live Meta system-user tokens. |
 | `archives/ad-manager-2026-08-19/` | The retired ads workspace. Read-only reference; don't run its scripts. |

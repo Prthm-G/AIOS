@@ -15,6 +15,8 @@ impressions, and lead counts are diagnostics, not the goal.
    claude mcp list          # expect meta-ads and meta-devtools connected
    meta auth status         # Ads CLI
    ```
+   MCP tools register at session start. If the servers were added mid-session, their tools won't be
+   callable until a fresh session; the Ads CLI works regardless.
    If a connector needs auth, **say so** and work from local or official sources. Never present a
    remembered figure as a live one. This is the specific failure that made the previous workspace
    untrustworthy. It documented `openseo` data it had never actually been able to query.
@@ -22,16 +24,24 @@ impressions, and lead counts are diagnostics, not the goal.
 
 ## Current state
 
+**Read `ROADMAP.md` for the phased plan.** Phase 1 is closing the WhatsApp attribution loop,
+which is smaller than it looks: Meta already sends `ctwa_clid` in the webhook and Kuanli already
+reads the object it arrives in, then throws the identifier away. See `measurement/RESEARCH-2026-08-20.md`.
+The implementation prompt is ready at `measurement/PROMPT-kuanli-ctwa-capture.md`; run it in a
+session started in `/home/user/automation_stack`, not here.
+
 | | |
 |---|---|
 | Live site | `education.skeure.com`, served by `../website-v3` (Next.js 15 → OpenNext → Cloudflare Workers) |
-| Not live | `../website-v4` is built but **not cut over**. Same `wrangler.jsonc` route, so deploying it replaces production. |
+| Site builds | `../website-v3` only. `website-v4` was deleted 2026-08-20; recover from commit `6662c7e` if ever needed. |
 | Analytics | **Nothing in production.** `../website-v3/src/lib/analytics.ts` is a no-op shim: 15 typed events, correct PII discipline, no provider ever loaded. |
 | Meta Pixel | Absent from the site entirely. |
 | CAPI | Not built. Leads land in Cloudflare D1 (`skeure-leads`) via `../website-v3/src/app/api/contact/route.ts`. |
-| WhatsApp | Primary CTA, and currently attribution-invisible. |
+| WhatsApp | Primary CTA. **Attribution is LIVE since 2026-08-20**: `ctwa_clid` + `ad_source_id` captured on `conversations`. Two numbers, both on Kuanli account `16cb2ac1`: `+91 86996 00020` (WABA `106777392057661`, carries the live LPU ads) and `919592200021` (WABA `2170658457111515`, the website number). |
 | GSC | A verification file exists at `../website-v3/public/google7b2ddd72feef8f7d.html`, so a property was verified at some point. **Whether it returns data is unconfirmed.** Settle this before planning any keyword work. |
-| Ad account | See `.env` / `SETUP-META-CONNECTORS.md`. The July-2026 record `act_1056790306735632` is **unverified**. Confirm live via `meta ads adaccount list`. |
+| Ad account (live leads) | **`act_278258370`**, personal, third Facebook identity, no business behind it. Currently delivering and generating every measurable lead. See Phase 5 in `ROADMAP.md`. |
+| Ad account (business) | **`act_961766249917785`** ("DegreeCraft"), business `1593889128670416`. Confirmed live 2026-08-20. The similarly-named `act_1056790306735632` ("skeure-education") is empty, zero campaigns. Don't switch to it on the strength of its name. |
+| Paid status | **Delivery halted.** `spend_cap` equals `amount_spent` (₹24,997.96) and the prepaid balance is ₹0, so an ACTIVE campaign has delivered nothing since 8 Aug. See `paid/BASELINE-2026-08-20.md`. |
 
 ## Two Meta identities · do not cross them
 
@@ -56,7 +66,10 @@ Cloud API. It is **not** the app backing the ads connector, and its scopes are n
 | Meta app, webhooks, App Review, compliance | `meta-devtools` MCP. Tools: `devtools_app`, `devtools_app_list`, `devtools_app_review`, `devtools_compliance`, `devtools_discovery` |
 | Technical SEO audit, on-page, schema, CWV | ECC `seo` skill + `ecc:seo-specialist` agent |
 | Lighthouse / CWV measurement | chrome-devtools MCP (`lighthouse_audit`, `performance_start_trace`) |
-| Anything touching production code, the lead DB, or PII | ECC `dev-team` four-lens review **first** |
+| Anything touching production code, the lead DB, or PII | ECC `dev-team` four-lens review **first**, then `santa-method` |
+| Meta account audit, waste hunting, campaign building | project skills in `.claude/skills/`: `meta-ads-audit`, `wasted-spend-finder`, `meta-ads-builder`, `account-structure-review` |
+| GSC, technical SEO, content gaps, CRO | `search-console`, `gsc-portfolio-audit`, `seo-audit`, `technical-seo-audit`, `content-gap-analysis`, `page-cro`, `ab-test-setup` |
+| Ambiguous go/no-go with real tradeoffs | ECC `council` |
 
 Do not load every installed skill. Use the smallest relevant set.
 
