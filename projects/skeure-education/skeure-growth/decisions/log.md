@@ -327,3 +327,120 @@ long enough to trust, never while it is the sole source of measurable leads.
 
 **Owner:** Pratham. Next: watch for the first captured referral, then remove the temporary
 `ctwa-probe` log, add test coverage for `persistAdReferral`, and start Phase 1.4 (CAPI).
+
+## 2026-08-21 · CAPI #270 root-caused: wrong token scope, not app access level. Second blocker found behind it.
+
+**Decision:** Ran `measurement/PROMPT-capi-unblock-270.md`. Its diagnosis was wrong and is now marked
+superseded. No App Review is needed, no Marketing API tier upgrade, and nothing about `act_278258370`
+is involved. Two real blockers were isolated by live probe, and both are Kuanli-side.
+
+**Blocker 1 — the calling token is missing one scope.** Kuanli does not use
+`AURETRIS_META_SYSTEM_USER_TOKEN`. It decrypts a per-WABA token out of `whatsapp_config`, and that is
+a *different* system user. Proven with `debug_token` against the app token:
+
+| Token | System user | Scopes |
+|---|---|---|
+| `whatsapp_config` row for WABA 106777392057661 (what Kuanli sends) | `122107379259418421` | `whatsapp_business_management`, `whatsapp_business_messaging`, `public_profile` |
+| `AURETRIS_META_SYSTEM_USER_TOKEN` in `.env` | `122109802857366873` ("Admin") | the above **plus `whatsapp_business_manage_events`**, `business_management`, `manage_app_solution` |
+
+Meta's Conversions API for Business Messaging onboarding guide names
+`whatsapp_business_management` + `whatsapp_business_manage_events` as the required token scopes.
+Held payload constant (same dataset, same v25.0 endpoint, same JSON body, same `partner_agent`,
+same real `ctwa_clid`) and varied only the token:
+
+- Kuanli's stored token → `(#270) ...development access level...`
+- `.env` token → `{"events_received": 1}`
+
+So #270 is Meta returning an Ads-API-tier message for what is actually a missing-scope condition.
+Misleading error, ordinary cause. The Auretris app is already `live_mode` and already holds
+**advanced** access on `whatsapp_business_messaging` and `whatsapp_business_management`; it has no
+`ads_management` at all and does not need it.
+
+**Blocker 2 — `Lead` is not a valid event name for `business_messaging`.** Sitting directly behind
+#270, and it would have failed all 39 events the moment the token was fixed. Live response:
+
+```
+error_subcode 2804066 — The event name parameter value "Lead" provided for your events with
+business_messaging action source is invalid. Provide a valid value ... such as "Purchase" or
+"LeadSubmitted".
+```
+
+Meta's documented list for `action_source: business_messaging`: `Purchase`, `LeadSubmitted`,
+`InitiateCheckout`, `AddToCart`, `ViewContent`, `OrderCreated`, `OrderShipped`, `OrderDelivered`,
+`OrderCanceled`, `OrderReturned`, `CartAbandoned`, `QualifiedLead`, `RatingProvided`,
+`ReviewProvided`. `Lead` is a **website** event name and is not accepted here.
+`wacrm/src/lib/meta/conversions.ts:72` types `ConversionEventName = 'Lead' | 'Purchase'`, and all 39
+queued rows carry `event_name = 'Lead'`.
+
+**End-to-end proof.** One real queued event was delivered on the live path (no `test_event_code`),
+reusing the queued row's own `event_id` so a later retry dedupes: `LeadSubmitted` + real `ctwa_clid`
++ `.env` token → `{"events_received": 1}`. The path works. Only the credential and the event name
+were ever wrong.
+
+**Corrections to the record.** `act_278258370` is irrelevant to CAPI — the events carry no ad account,
+only `ctwa_clid` + `whatsapp_business_account_id`, and delivery succeeded with that account untouched.
+The DEFERRED decision on claiming it stands, unaffected. WABA `106777392057661` ("Lpu Online
+Education") was confirmed **owned by business `1593889128670416` (Lpupatiala)** — the same portfolio
+that owns `act_961766249917785`. That answers the Phase 5 step-2 question ahead of schedule.
+
+**Also learned:** `test_event_code` does not bypass the scope check, so it is a safe rehearsal path;
+and the gate order on a valid token is event-name → `ctwa_clid` validity, which is why bogus-clid
+probes never reached #270.
+
+**Expiry math.** 28 events expire 2026-08-27 11:30 UTC, 11 expire 2026-08-28 02:00 UTC. Both fixes
+are small and there is no review queue in the way, so the deadline is comfortable if they land.
+
+**Owner:** Pratham. Nothing was changed in Kuanli — both fixes sit inside the handoff's "do not touch
+Kuanli" boundary, and that boundary was written on the assumption the delivery side was green, which
+it was not. Awaiting his call on which token route to take.
+
+### Addendum, same day · token swap applied, code fix reviewed and held
+
+**Applied (approved by Pratham):** swapped the `whatsapp_config` token for WABA 106777392057661 to
+`AURETRIS_META_SYSTEM_USER_TOKEN`, re-encrypted with the app's own GCM helper inside the container so
+neither the key nor the plaintext crossed a boundary. Previous ciphertext backed up to the session
+scratchpad for rollback. Verified after: decrypts clean, scopes now include
+`whatsapp_business_manage_events`, and phone `110485318348695` still reads GREEN so messaging is
+unaffected. **The sweep's error changed from `(#270)` to `Invalid parameter` (2804066), which is the
+proof #270 is gone.** Queue is now 41 rows, up from 39, so capture is still live.
+
+**`dev-team` four-lens review of the event-name fix — outcome: approved with three corrections.**
+
+1. **Migration number is 071, not 069.** `069_offerable_programmes.sql` and
+   `070_ad_referral_msg_time.sql` both already exist and 069 is applied in the live DB. QA and
+   Architect caught this independently; the Developer lens said 070, which is also taken. Verified
+   directly against `wacrm/supabase/migrations/` and the database. **071.**
+2. **`conversions.test.ts` was missing from the plan and is mandatory.** It carries ~15 hardcoded
+   `'Lead'` literals that stop typechecking the moment the union narrows. This is a shared Next.js
+   build, so a compile error there blocks deploy of the whole app including the inbound webhook
+   route. The test file is part of the change, not follow-up.
+3. **`event_id` must be rewritten in the same atomic UPDATE as `event_name`.** `audit()` upserts on
+   `onConflict: 'event_id'` (conversions.ts:248) while `buildEventId` recomputes the id from the
+   event name. Rename one without the other and the retry inserts a *new* row rather than updating
+   the old one; the original is orphaned at `status='failed'` and re-enters the sweep every 15
+   minutes forever. One statement, not two.
+
+**Event-name ruling: `LeadSubmitted`, not `QualifiedLead`.** The CRM stage is literally named
+"Qualified", which makes `QualifiedLead` look like the match. It is a naming coincidence. Migration
+068's own measured comments show 28 of 29 ad-attributed conversations reach that stage, so it is
+near-universal and carries no selectivity. Training Meta's optimiser on it as "qualified" would teach
+it that qualified means "replied once". `QualifiedLead` is reserved for a genuinely selective
+counsellor-vetted stage later.
+
+**The already-delivered row:** mark `1562d832-6b92-47ad-9cc8-7a7084f5fed8` as `sent` rather than
+renaming it. Renaming re-sends it under a new `event_id` and Meta records a duplicate conversion,
+which corrupts the ROAS signal for that ad's whole attribution window. Its stale `:Lead` event_id is
+inert once the row is `sent`.
+
+**Confirmed safe:** `reportConversion` is reachable only from the cron route, never from the inbound
+message path, so this change cannot drop or delay a customer message. The one live-app surface is the
+`deals` AFTER trigger aborting a stage-advance transaction if the rewritten body throws, which is why
+071 gets a dry run before it is applied.
+
+**OPEN, and not yet proven.** `events_received: 1` is receipt, not processing. Dataset
+1049749924574681 still reports `last_fired_time` and `server_last_fired_time` at epoch 0 roughly 12
+minutes after the verification event was accepted, and `ads_get_dataset_stats` returns an empty
+series. That is consistent with normal Events Manager lag on a dataset's first event, but it is **not
+confirmation**. Do not call CAPI proven until that timestamp moves.
+
+**Owner:** Pratham. Code fix reviewed and ready, deliberately not applied.

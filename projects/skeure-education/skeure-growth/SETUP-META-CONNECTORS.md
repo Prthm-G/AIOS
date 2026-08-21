@@ -367,3 +367,65 @@ Option A gets that for free and can be undone.
 - Confirm which option to take. Option A unless scripted access is required.
 - For Option A, the Facebook identity used to authorize `meta-ads`, so the right account gets the
   role grant.
+
+---
+
+# CAPI delivery · the token that actually matters (added 2026-08-21)
+
+**Two system users exist under the Auretris app, and they are not interchangeable.** This is the
+thing that cost a day, so it is recorded here rather than only in the decision log.
+
+| Where | System user | Has `whatsapp_business_manage_events`? | Can send CAPI? |
+|---|---|---|---|
+| `whatsapp_config.access_token` (encrypted, per WABA) — what Kuanli sends | `122107379259418421` | **No** | No → `(#270)` |
+| `AURETRIS_META_SYSTEM_USER_TOKEN` in `automation_stack/.env` | `122109802857366873` ("Admin") | **Yes** | Yes → `events_received: 1` |
+
+Meta returns `(#270) ...development access level...` when this scope is missing. That message points
+at the Marketing API access tier and at ad-account admin rights, and **both are red herrings** for
+`action_source: business_messaging`. Do not go down the App Review path on the strength of it. The
+Auretris app is already in `live_mode` with **advanced** access on `whatsapp_business_messaging` and
+`whatsapp_business_management`, holds no `ads_management`, and needs none.
+
+To check a token before blaming anything else:
+
+```bash
+# APP_ID is public; the app secret stays in the env file
+curl -s -G "https://graph.facebook.com/v21.0/debug_token" \
+  --data-urlencode "input_token=$TOKEN_TO_CHECK" \
+  --data-urlencode "access_token=${APP_ID}|${META_APP_SECRET}" \
+| python3 -c "import json,sys; print(json.load(sys.stdin)['data'].get('scopes'))"
+```
+
+`whatsapp_business_manage_events` must be in that list.
+
+**Valid `event_name` values for `action_source: business_messaging`** (Meta's own FAQ, checked
+2026-08-21) — `Lead` is **not** among them; it is a website event name:
+
+`Purchase`, `LeadSubmitted`, `InitiateCheckout`, `AddToCart`, `ViewContent`, `OrderCreated`,
+`OrderShipped`, `OrderDelivered`, `OrderCanceled`, `OrderReturned`, `CartAbandoned`, `QualifiedLead`,
+`RatingProvided`, `ReviewProvided`.
+
+Rehearse with `test_event_code` — it does **not** bypass the scope check, so a green test there is a
+real signal, and nothing enters the dataset.
+
+## RESOLVED 2026-08-21: who owns WABA `106777392057661`
+
+Phase 5 step 2 asked this. Answer, probed live:
+
+```
+name:               Lpu Online Education
+owner_business:     1593889128670416  (Lpupatiala)   ← same portfolio as act_961766249917785
+ownership_type:     CLIENT_OWNED
+account_review:     APPROVED
+dataset:            1049749924574681
+```
+
+So the WABA carrying the live ad traffic is **already inside the business portfolio**. Only the ad
+account `act_278258370` sits outside it. That narrows Phase 5 to one asset.
+
+## `act_278258370` is not involved in CAPI at all
+
+A `business_messaging` event carries no ad account — only `ctwa_clid` and
+`whatsapp_business_account_id`. A real queued event was delivered end to end on 2026-08-21 with that
+account untouched and unclaimed. Nothing in the CAPI path requires resolving it, and the DEFERRED
+decision on claiming it is unaffected.
