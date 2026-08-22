@@ -73,6 +73,34 @@ Cloud API. It is **not** the app backing the ads connector, and its scopes are n
 
 Do not load every installed skill. Use the smallest relevant set.
 
+## Proactive tool routing — invoke these without being asked
+
+Pratham will often not name the right agent or skill, because he does not always know which one
+fits. **You choose.** When a task matches a row below, invoke that agent/skill on your own initiative
+and say briefly which one you used and why. Do not wait to be told, and do not ask permission just to
+run a read-only reviewer or research skill.
+
+| When the work is… | Invoke, unprompted |
+|---|---|
+| A change to `../website-v3` (Next.js / TS / React), after writing it | `ecc:typescript-reviewer` + `ecc:react-reviewer`; `ecc:react-build-resolver` if the build breaks |
+| Any Supabase/Postgres schema, migration, trigger, or non-trivial query | `ecc:database-reviewer` |
+| Anything touching the lead DB, auth, a webhook, tokens, or student PII | `ecc:security-reviewer` |
+| A production change on the funnel path (Kuanli, CAPI, the site's lead route) | `dev-team` four-lens first, then `santa-method` for the change |
+| Technical SEO, on-page, schema, crawl, indexation, Core Web Vitals | `ecc:seo` skill + `ecc:seo-specialist` agent; project skills `technical-seo-audit` / `seo-audit` |
+| Live Lighthouse / CWV measurement | `chrome-devtools` MCP (`lighthouse_audit`, `performance_start_trace`) |
+| Campaign planning, creative, ad copy, launch plan | `ecc:marketing-campaign` skill + `ecc:marketing-agent` agent; project `meta-ads-builder` |
+| Meta account audit, waste hunting, structure review | project skills `meta-ads-audit`, `wasted-spend-finder`, `account-structure-review` |
+| Keyword volume/difficulty, backlinks, rank, GSC portfolio | `search-console` / `gsc-portfolio-audit` (+ OpenSEO MCP once wired) |
+| Competitor ad research, creative deconstruction | `competitor-ads-analyst`, `video-ad-analysis` |
+| A go/no-go with real tradeoffs (spend cap, LPU eligibility, account claim) | `ecc:council` |
+| Deep multi-source research (tool eval, market, competitor landscape) | `ecc:deep-research` (firecrawl + exa, both connected) |
+| A full cross-domain marketing work session | `skeure-marketing-agency` skill |
+
+**The one limit:** match the tool to the job, not to the keyword. Do not fire a heavyweight agent on
+a one-line edit, and never spawn a subagent unless the task genuinely fans out. Reviewers and
+research skills are cheap and encouraged; four-lens `dev-team` and `council` are for real decisions,
+not routine work. The project skills above are project-scoped, so they cost nothing in other sessions.
+
 ## Source and claim rules
 
 - UGC-DEB and official HEI sources own programme entitlement facts.

@@ -26,9 +26,10 @@ export default function FaqPage() {
     { name: "Home", url: "/" },
     { name: "FAQ", url: "/faq/" },
   ]);
-  // FAQPage: general first, then financing.
+  // FAQPage: financing first, then general — fees are the most-asked question, so
+  // they lead both the visible page and the structured data Google reads.
   const faqLd = faqPageJsonLd(
-    [...general, ...financing].map((f) => ({ question: f.data.question, answer: f.data.answer })),
+    [...financing, ...general].map((f) => ({ question: f.data.question, answer: f.data.answer })),
   );
 
   return (
@@ -38,20 +39,20 @@ export default function FaqPage() {
 
       <PageHero eyebrow="Help" title="frequently asked questions" motif="faq" />
 
-      {general.length > 0 && (
-        <section className="wrap py-12 sm:py-14">
-          <SectionHeading title="general" />
-          <div className="mt-6">
-            <Accordion items={general.map((f) => ({ question: f.data.question, answer: f.data.answer }))} />
-          </div>
-        </section>
-      )}
-
       {financing.length > 0 && (
         <section className="wrap py-12 sm:py-14">
           <SectionHeading title="financing" />
           <div className="mt-6">
             <Accordion items={financing.map((f) => ({ question: f.data.question, answer: f.data.answer }))} />
+          </div>
+        </section>
+      )}
+
+      {general.length > 0 && (
+        <section className="wrap py-12 sm:py-14">
+          <SectionHeading title="general" />
+          <div className="mt-6">
+            <Accordion items={general.map((f) => ({ question: f.data.question, answer: f.data.answer }))} />
           </div>
         </section>
       )}

@@ -429,3 +429,50 @@ A `business_messaging` event carries no ad account — only `ctwa_clid` and
 `whatsapp_business_account_id`. A real queued event was delivered end to end on 2026-08-21 with that
 account untouched and unclaimed. Nothing in the CAPI path requires resolving it, and the DEFERRED
 decision on claiming it is unaffected.
+
+## RESOLVED 2026-08-21: `act_278258370` is ALREADY reachable. Options A/B/C are moot.
+
+The whole "grant a role / mint a token / claim it" question above was answered by simply asking the
+connector. `ads_get_ad_accounts` on the existing `meta-ads` MCP returns **four** accounts, not two:
+
+| Ad account | Name | Owning business | Status |
+|---|---|---|---|
+| `278258370` | **Bimal Goel** | *(none, personal)* | ACTIVE, payment method on file |
+| `961766249917785` | DegreeCraft | `1593889128670416` Lpupatiala | ACTIVE |
+| `1056790306735632` | skeure-education | `1593889128670416` Lpupatiala | ACTIVE, Ads MCP not yet rolled out |
+| `1901997537184184` | **Pratham Goel** | *(none, personal)* | ACTIVE, no payment method |
+
+Proven with a real read, not just the listing: campaigns on `act_278258370` return fine, including the
+live one, `FB Ads - 01/07/2026`, ACTIVE, ₹51,022.11 spent, 2,112,050 impressions, OUTCOME_ENGAGEMENT.
+
+**So the identity that authorized `meta-ads` already holds a role on the personal account.** No role
+grant, no second MCP connection, no `.env.lpu`, no claiming. Ignore Options A, B and C above for
+anything conversational or read/analysis shaped.
+
+### The app-roles confusion, and why the Facebook ID was never needed
+
+`Skeure Ads Connector` was created **under a business portfolio** (step 1.3 of this runbook). Meta's
+App Roles doc is explicit about what that changes:
+
+> "If your app is connected to a business portfolio, you must use the Business Manager to manage
+> roles for your app."
+
+So the App Dashboard's Roles panel is not where people get added for this app, which is why searching
+there for a profile goes nowhere. In Business Settings people are added **by email address**, never by
+Facebook ID or username. That is why the ID could not be found: nothing in the working path ever asks
+for it.
+
+If a raw profile ID is ever genuinely needed: read it off the profile URL. `facebook.com/<username>`
+gives the username; `facebook.com/profile.php?id=<NUMBER>` gives the numeric ID directly. A profile
+with no username can create one in Accounts Center. **Do not** use Graph API `/me?fields=id` for this:
+that returns an *app-scoped* ID which differs per app and will not resolve anywhere else.
+
+### What still does not work, and why
+
+The `meta` Ads CLI is expected NOT to see `act_278258370`. `ACCESS_TOKEN` is a system-user token, and
+a system user cannot hold a role on a personal ad account, which is structural rather than a
+configuration miss. Consistent with the `(#200) Ad account owner has NOT grant ads_management or
+ads_read` still returned by direct Graph probes on that account today. **Not re-confirmed on 2026-08-21**:
+`meta ads adaccount list` returned `API error (4): Application request limit reached`, an app-level
+rate limit, so the CLI check was inconclusive this run rather than negative. Retry when the limit
+clears. Scripted access to that account still needs a ~60-day user token per Option B.

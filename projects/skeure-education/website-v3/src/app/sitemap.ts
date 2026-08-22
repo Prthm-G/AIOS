@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getUniversities, getBlogPosts } from "@/lib/content";
+import { PROGRAMS } from "@/data/programs.config";
 import { site } from "@/data/site";
 
 // Next resolves relative URLs here against `metadataBase`, but the sitemap spec
@@ -40,6 +41,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: url(path),
       changeFrequency: (path === "/" ? "weekly" : "monthly") as "weekly" | "monthly",
       priority: path === "/" ? 1 : 0.7,
+    })),
+    ...PROGRAMS.map((p) => ({
+      url: url(`/programs/${p.slug}/`),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
     })),
     ...getUniversities().map((uni) => ({
       url: url(`/universities/${uni.id}/`),

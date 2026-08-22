@@ -8,6 +8,19 @@ Maintain an evidence-led growth system for `education.skeure.com` covering organ
 and shared measurement. Strategy and evidence live here. Production website changes live in
 `../website-v3`.
 
+## Tool selection is your job, not the operator's
+
+Pratham will usually describe the outcome, not the tool. Do not wait for him to name an agent or
+skill. Read the **"Proactive tool routing"** table in `CLAUDE.md` and invoke the mapped specialist
+on your own initiative, naming which one you used and why. Route by the job:
+
+- code review after a change → the language reviewer (`ecc:typescript-reviewer`, `ecc:react-reviewer`)
+- any DB/migration work → `ecc:database-reviewer`; anything touching PII/auth/tokens → `ecc:security-reviewer`
+- a production funnel change → `dev-team` then `santa-method`
+- SEO / CWV / campaign / research / go-no-go → the matching row in that table
+
+Match the tool to the job, not the keyword; do not over-fire heavyweight agents on trivial edits.
+
 ## Required context
 
 - Read `CLAUDE.md` before anything domain-specific.

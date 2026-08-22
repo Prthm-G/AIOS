@@ -444,3 +444,580 @@ series. That is consistent with normal Events Manager lag on a dataset's first e
 confirmation**. Do not call CAPI proven until that timestamp moves.
 
 **Owner:** Pratham. Code fix reviewed and ready, deliberately not applied.
+
+## 2026-08-22 · CAPI event-name fix built + verified (apply gated to human); tool routing wired; OpenSEO staged
+
+**CAPI fix (task C).** Applied the two code edits in `automation_stack/wacrm`: `ConversionEventName`
+narrowed `'Lead'|'Purchase'` -> `'LeadSubmitted'|'Purchase'` (conversions.ts:72), and all 16 `'Lead'`
+literals in `conversions.test.ts` -> `'LeadSubmitted'`. Typecheck clean for these files (the sole tsc
+error is a pre-existing stale `.next/types` artifact for an unrelated followups/dispatch route);
+`vitest run conversions.test.ts` = 21/21 pass. Migration `071_lead_submitted_rename.sql` written and
+dry-run-verified against prod: 95 queued rows match the rename predicate, 0 collisions, no
+UNIQUE-violation risk. The one row hand-delivered on 2026-08-21 for #270 verification
+(`1562d832-...:Lead`) was marked `status='sent'` so the rename skips it (prevents a duplicate
+conversion) — that leaves 94 rows to rewrite and deliver.
+
+**Key simplification found:** the queued rows deliver the moment their DB `event_name` becomes
+`LeadSubmitted`, because the running sweep posts the DB value verbatim. So **071 + one sweep clears
+the queue with NO wacrm redeploy in the critical path.** The code deploy is hygiene for future
+correctness (keeps `tsc`/CI green and stops `'Lead'` being reintroduced), not a deadline item.
+
+**Apply is gated to a human, deliberately.** The harness auto-mode classifier blocked the migration
+apply and the deploy (it allowed the single-row `sent` update and the read-only dry-run). That is the
+correct line for a production CAPI/DB change under this workspace's own action boundaries. The apply
+is handed to Pratham as `!`-prefixed commands; migration file staged in the session scratchpad and to
+be copied into `wacrm/supabase/migrations/071_lead_submitted_rename.sql`. Deadline unchanged: 28
+events expire 2026-08-27 ~11:30 UTC.
+
+**Tool routing (his request).** Added a "Proactive tool routing" table to this workspace's `CLAUDE.md`
+and a "Tool selection is your job" section to `AGENTS.md`, instructing Claude and delegated agents to
+invoke the mapped specialist (database-reviewer for migrations, security-reviewer for PII, dev-team +
+santa-method for funnel changes, seo/marketing/council/deep-research by job) without being asked,
+while not over-firing heavyweight agents on trivial edits.
+
+**OpenSEO (task A).** Cloned `github.com/every-app/open-seo` (MIT, Ben Senescu) to `/home/user/openseo`.
+Verified: Cloudflare self-host is the documented recommended path (free plan works); self-host is ~28%
+cheaper than the $10 hosted (hosted adds a 28% markup on DataForSEO calls). GSC integration is the
+piece that would finally settle the Phase 2/4 "does GSC return data" question. **Blocking dependency:
+a DataForSEO API key (pay-as-you-go, ~$0.05/keyword), which only Pratham can create.** Setup handed to
+a fresh permissioned session via the relaunch prompt. Recommendation stands: self-host on Cloudflare,
+not the $10 hosted.
+
+**Owner:** Pratham. Next: run the C apply commands; provide a DataForSEO key for OpenSEO.
+
+## 2026-08-22 (later) · 071 was never applied; renumbered to 074, reviewed, hardened, handed to Pratham. OpenSEO staged.
+
+**The premise was wrong: migration 071 never landed.** Live DB read: `meta_conversion_events`
+still holds `event_name='Lead'` on all 110 rows (94 `failed`, 1 `sent`, 15 `skipped`). The sweep
+`--status` still reports `failed|Invalid parameter|94`. Nothing was renamed. This was never a
+delivery bug — the migration simply was not run, because the previous session's apply was blocked
+by the harness auto-mode classifier and handed off, and the handoff was not executed.
+
+**Worse, the number 071 was taken in the meantime.** `071_university_roll_number.sql`,
+`072_student_portal_credentials.sql` and `073_contact_source.sql` all landed on 2026-08-21 after
+the rename was drafted. Applying the staged file as "071" would have collided. **Renumbered to
+`074_lead_submitted_rename.sql`** and copied out of the old session scratchpad into
+`wacrm/supabase/migrations/`. Verified none of 071/072/073 touch `record_conversion_from_deal()`
+or `meta_conversion_events`, and read the live `pg_proc` body to confirm it still matches 068
+(`WHEN 'Qualified' THEN 'Lead'`) — so nothing newer gets clobbered by the `CREATE OR REPLACE`.
+
+**`database-reviewer` found four real defects in the drafted migration.** All four fixed in the
+file before any apply attempt:
+
+1. **No transaction wrapper (HIGH).** Run through plain `psql -f`, every statement auto-commits
+   independently. If the data UPDATE aborted, the function swap would already be committed —
+   leaving new deals correctly reporting `LeadSubmitted` while the 94 legacy rows stayed `Lead`
+   and got rejected by Meta every 15 minutes until they aged out. Now wrapped in
+   `BEGIN; SET LOCAL lock_timeout = '5s'; ... COMMIT;`.
+2. **The `DROP TRIGGER`/`CREATE TRIGGER` pair was unnecessary and actively risky.** The trigger's
+   shape is unchanged from 068, and `CREATE OR REPLACE FUNCTION` preserves the function OID, so
+   the existing trigger picks up the new body on its next fire. Recreating it would take
+   `ACCESS EXCLUSIVE` on `deals` — and Postgres grants locks FIFO, so every later read of `deals`
+   would queue behind it and stall the pipeline UI. It also opened a window with no trigger at
+   all, in which a deal reaching Qualified/Enrolled is silently never recorded. **Block deleted.**
+3. **The `NOT EXISTS` guard is blind to its own statement.** A single UPDATE uses one command-id,
+   so tuples it has already rewritten are invisible to its own correlated subquery (the same rule
+   that stops `INSERT INTO t SELECT * FROM t` looping). The guard therefore protects only against
+   pre-existing `LeadSubmitted` rows, **not** against two matching rows colliding with each other
+   on the UNIQUE `event_id`. Pre-flight query run against prod: zero `conversation_id` values with
+   more than one live `Lead` row. Precondition verified, not assumed.
+4. **Sweep-overlap window.** The sweep selects up to 200 rows' `event_name` into memory, then
+   loops serially over HTTP to Meta, recomputing `event_id` from the **in-memory** name. A commit
+   landing mid-batch makes those rows upsert under a stale `<conv>:Lead` id, inserting orphans
+   that get rejected for 7 days before self-expiring. Mitigation is timing, not code: apply in
+   clear air between ticks (`7,22,37,52 * * * *`).
+
+**Confirmed correct, no change needed:** the SQL `event_id` construction
+(`conversation_id::text || ':' || ev_name`) matches `buildEventId()` in `conversions.ts` literally
+— same delimiter, order, and casing. And the 7-day expiry in `report-conversions/route.ts`
+guarantees no row can loop forever regardless.
+
+**Apply is again gated to a human.** The classifier blocked the `psql` apply, correctly — it is a
+write to the production CAPI queue. Handed to Pratham as a single `!` command. **The code side is
+already in the tree** (`ConversionEventName` narrowed to `'LeadSubmitted' | 'Purchase'`), and the
+key property from 2026-08-22 still holds: **the queued rows deliver the moment their DB
+`event_name` changes, because the sweep posts the DB value verbatim — so 074 plus one sweep tick
+clears the queue with no wacrm redeploy in the critical path.** Deadline unchanged: 28 events
+expire 2026-08-27 ~11:30 UTC.
+
+**OpenSEO (task A) staged as far as it goes without Pratham.** `pnpm install` done, prereqs
+verified (Node 24.19, pnpm 10.30.1), `.env.selfhost` created `chmod 600` and gitignored, and
+`BETTER_AUTH_SECRET` generated locally with `openssl rand -base64 32` straight into the file —
+never printed. Runbook at `SETUP-OPENSEO.md`.
+
+Three findings worth keeping:
+
+- **The GSC answer costs nothing.** DataForSEO gives $1 free credit and its minimum top-up is $50,
+  but GSC data comes from Pratham's own Google account and is never metered by OpenSEO. The key is
+  still a hard-required field (`selfhost-deploy-preflight.mjs` fails on an empty value), so a free
+  account is needed to deploy — but no top-up is needed to settle the `education.skeure.com`
+  question. **Decision (Pratham): free account now, judge the $50 on evidence afterwards.**
+- **The worker hostname is predictable, so Google can be done in parallel.** `alchemy.access.ts:22`
+  gives `open-seo-<stage>` and the self-host stage is literally `selfhost`; with the finance-v2
+  account's workers.dev subdomain `241-pratham`, the origin is
+  `https://open-seo-selfhost.241-pratham.workers.dev` before the deploy has run. That removes the
+  documented deploy-then-configure round trip. **Decision (Pratham): reuse the finance-v2
+  Cloudflare account** (fresh stage-suffixed D1/KV/R2; nothing touches the finance worker).
+- **No reusable Google OAuth client exists** — searched every `.env` under `automation_stack`,
+  `AIOS`, `.hermes` and `job-search` for `GOOGLE_CLIENT_ID`, zero hits. Fresh create required.
+  Also: there is **no Cloudflare auth on this machine at all** (`wrangler whoami` → not
+  authenticated), and the finance-v2 `CLOUDFLARE_API_TOKEN` is not a substitute — it holds Access
+  **read**, while this deploy needs Access write plus R2 and KV write. `pnpm alchemy login` with
+  the `access:write` scope is unavoidable and interactive.
+
+**Owner:** Pratham. Two commands: the 074 apply, and the DataForSEO/Cloudflare/Google setup in
+`SETUP-OPENSEO.md`.
+
+### Addendum, same day · OpenSEO deployed; GSC owner account lost but recoverable via DNS
+
+**Deploy is live.** Steps 1-4 of `SETUP-OPENSEO.md` done by Pratham. Verified independently:
+`/api/health` on `open-seo-selfhost.241-pratham.workers.dev` returns 302 to the Cloudflare Access
+login (correct for an Access-protected worker), the alchemy `default` profile carries
+`access:write`, and all three required env vars are populated. `BETTER_AUTH_SECRET` is unchanged
+at 44 chars, so the generated value survived.
+
+**New problem: the Google account owning the `education.skeure.com` Search Console property is
+lost. It is recoverable, and no data is lost.** Probed live: the property's proof of ownership is
+a DNS TXT record, `google-site-verification=ceERVsKOjnSXB7n2gKPz8gzZraSZhK9faK8ZEDob8Fs`, on
+`education.skeure.com` — inside the Cloudflare `skeure.com` zone Pratham already controls. No
+apex TXT, no verification `<meta>` tag on the homepage, so DNS is the only ownership root. **Whoever
+controls the zone controls the property**, which makes the lost account an inconvenience rather
+than a loss.
+
+Two facts confirmed against Google's live docs (not from training data, per the standing rule):
+Search Console data is **property-level, not account-level** — *"Data is collected for a property
+as soon as anyone adds it in Search Console, even before verification occurs"* — so a newly
+verified owner sees the full ~16-month history; and *"Multiple people can verify ownership of the
+same website property"*, so no cooperation from the old account is needed.
+
+**Two ordering traps recorded in the runbook**, both capable of making things worse:
+1. **Verify the new account before deleting the old TXT.** Google: *"If all verified owners lose
+   access to a property, all users will lose access to the Search Console property."* Deleting the
+   only token first can orphan the property.
+2. **In Cloudflare, ADD a second TXT record, do not EDIT the existing one.** Multiple TXT records
+   coexist and Google matches its expected value among them; the dashboard makes "Edit" the easy
+   misclick, and Google's guide warns against overwriting an existing token.
+
+Eviction of the old owner is a **two-step** action — remove the user in Users and permissions *and*
+delete the DNS token — because *"if you do not delete these tokens, the removed owner will be able
+to re-verify ownership"*. Flagged as **urgent if the account was compromised rather than forgotten**:
+a verified owner can file URL removal requests and deindex pages.
+
+**Also noted: the GSC answer may arrive before OpenSEO is involved.** Verifying the new account
+surfaces the Performance report directly, which is the whole question. And the old *hosted*
+OpenSEO account may still work — its auth (`src/lib/auth.ts`) enables email+password as well as
+Google SSO, so an email+password signup is unaffected by the lost Google account; its stored GSC
+refresh token also keeps working without interactive login until revoked. Worth two minutes before
+any rebuild. No whole-account export exists, but per-feature export does (saved keywords,
+backlinks, audit results, Export-to-Sheets).
+
+**Owner:** Pratham. Next: add the second TXT record, verify, read Performance, then evict the old
+owner and continue at step 5.
+
+### Addendum, same day · 074 applied. Queue green. Meta-side visibility still NOT confirmed.
+
+**Applied by Pratham.** `BEGIN / SET / CREATE FUNCTION / UPDATE 0 / COMMIT`. The `UPDATE 0` was on
+his *second* invocation; the first had already rewritten the rows, so the second correctly matched
+nothing (`event_name='Lead' AND status IN ('pending','failed')` was by then empty). Not an error.
+
+**Verified directly against prod after the apply:**
+
+| event_name | status | count |
+|---|---|---|
+| LeadSubmitted | sent | 113 |
+| LeadSubmitted | skipped | 1 |
+| Lead | sent | 1 |
+| Lead | skipped | 17 |
+
+- **Zero `failed` rows.** Was 94. The whole backlog delivered.
+- `split_part(event_id, ':', 2)` mirrors `event_name` in every group, so no orphans and no
+  id/name drift. The review's #3 collision risk never materialised.
+- Trigger function now reads `WHEN 'Qualified' THEN 'LeadSubmitted'`.
+- The 2026-08-21 hand-delivered row is still `Lead|sent`, untouched as designed, so no duplicate
+  conversion was sent for it.
+- Row count grew 110 -> 132 during the window, and the new rows delivered as `LeadSubmitted`.
+  Capture and delivery are both live end to end.
+- Last successful send: `2026-08-22 10:07:04 UTC`.
+
+**The 2026-08-27 expiry deadline is retired.** Nothing is queued to expire.
+
+**OPEN, and now more suspicious than before.** Dataset `1049749924574681` still reports
+`last_fired_time` and `server_last_fired_time` at **epoch 0**, `ads_get_dataset_stats` returns an
+empty series (7-day window, and again with `event_source=SERVER_ONLY`), and
+`ads_get_dataset_quality` returns `{"web":[]}`. `is_active: true`, business `1593889128670416`,
+created 2026-08-20.
+
+The bulk of the 113 landed ~2 minutes before this query, which is far too soon for Events Manager
+aggregation, so that part proves nothing either way. **What does bother:** the single event
+hand-delivered on 2026-08-21 has now had ~24 hours and still has not moved the timestamp. That is
+past normal first-event lag.
+
+Two live hypotheses, neither yet evidenced:
+1. **These fields are pixel/web-centric and `business_messaging` conversions simply do not populate
+   them.** The quality call returning only an empty `web` channel is weakly consistent with this —
+   a CTWA dataset would have no web channel to report on. If so, the events are fine and we are
+   reading the wrong dial; CTWA conversions would surface via ad-level attribution instead.
+2. Something downstream is silently discarding them after `events_received`.
+
+**Do not call CAPI proven.** That ruling from 2026-08-21 stands unchanged: `events_received` is
+receipt, not processing. What IS proven is everything on our side — the rename, the trigger, the
+delivery path, and an empty failure queue.
+
+**Next check:** re-query `ads_get_dataset_details` after several hours. If `server_last_fired_time`
+moves, done. If it is still epoch 0 tomorrow with 113 accepted events behind it, hypothesis 1 needs
+testing by looking for the conversions in ad-level attribution rather than the dataset overview.
+
+**Owner:** Pratham. Nothing blocking; this is a watch item.
+
+## 2026-08-22 (later) · ANSWERED: GSC returns zero data for education.skeure.com. The site is effectively unindexed.
+
+OpenSEO self-host is fully live — Cloudflare Access + Managed OAuth + MCP connected, self-hosted
+mode, project `d1f503e3-339f-4df7-9f3e-6ae484dce485` bound to `education.skeure.com`, user
+`241.pratham@gmail.com`. The Phase 2/4 question is now settled with first-party data.
+
+**The answer: there is no GSC data, and it is not a measurement problem.**
+
+`get_search_console_performance` on `sc-domain:education.skeure.com`, **`last_16_months`**, returned
+`ok: true` with **`rowCount: 0`** — by `query` and again by `date`. A clean successful API call
+against a correctly bound Domain property. Zero clicks, zero impressions, for the entire retention
+window. Every "is GSC even wired up" hypothesis from July is dead; the wiring is fine and there is
+simply nothing to report.
+
+**URL Inspection explains why.** Ran against the live Google index, so this is property-age
+independent:
+
+| URL | Coverage |
+|---|---|
+| `/` | **Submitted and indexed**, PASS, last crawled 2026-07-30, canonical clean, crawled as MOBILE |
+| `/universities/` | **URL is unknown to Google** |
+| `/programs/` | **URL is unknown to Google** |
+| `/about/` | **URL is unknown to Google** |
+| `/faq/` | **URL is unknown to Google** |
+| `/blog/` | **URL is unknown to Google** |
+
+**1 of 20 sitemap URLs is in Google's index.** Google crawled the homepage once, three weeks ago,
+and never went deeper. Zero impressions is the arithmetic consequence, not a mystery.
+
+**Ruled out by direct check, so nobody re-investigates them:**
+- **robots.txt is correct.** `User-agent: *` carries `Allow: /`; the nine `Disallow: /` groups are
+  all AI crawlers (Amazonbot, Applebot-Extended, Bytespider, CCBot, ClaudeBot,
+  CloudflareBrowserRenderingCrawler, Google-Extended, GPTBot, meta-externalagent). **`Google-Extended`
+  is the AI-training opt-out, not Googlebot** — Googlebot is unblocked. Verified against the raw
+  file with grouping preserved, because a `grep` that drops blank lines makes consecutive
+  `User-agent` lines look like one group and invents a catastrophe that is not there.
+- **Sitemap is valid and declared** in robots.txt: 20 URLs, absolute, trailing slashes.
+- **Trailing slashes matter.** A first inspection of `/programs` (no slash) returned "unknown",
+  which was an artifact of the wrong URL form. Re-ran all five with the sitemap's own trailing-slash
+  form and the result held. Always inspect the canonical form.
+
+**Also found: the OpenSEO project's market is wrong.** `locationCode: 2840` = United States.
+Skeure sells in Punjab. Any keyword or SERP research run before this is changed to India returns US
+search data and is worthless. Fix before spending a single DataForSEO credit.
+
+**What this reframes.** The SEO problem was never measurement or attribution. It is discovery: a
+site whose interior pages Google has never seen. Sitemap submission, indexing requests, internal
+linking, and any external link at all now rank above keyword research, which cannot help a page that
+is not in the index.
+
+**Owner:** Pratham. Next: submit the sitemap in Search Console, request indexing on the money pages,
+set the project market to India.
+
+### Addendum, same day · all four remediations applied; indexation moving within hours
+
+Pratham did all four. Verified against the live Google index, not taken on trust.
+
+**Confirmed:**
+- **Project market fixed.** `locationCode` now `2356` (India), was `2840` (United States). Keyword and
+  SERP research is now safe to run.
+- **Sitemap is submitted and being processed.** URL Inspection now returns
+  `sitemap: ["https://education.skeure.com/sitemap.xml"]` against multiple URLs. It did not before.
+  *(Submission needs the FULL absolute URL — a Domain property has no prefix to prepend, so the
+  bare `sitemap.xml` form is rejected with "Invalid sitemap address". Recorded because it will
+  recur on the next property.)*
+- **Indexing requests worked, and fast.** `/universities/` crawled 2026-08-22T13:58Z and
+  `/programs/` at 14:00Z — both **now "Submitted and indexed"**, both were "URL is unknown to
+  Google" the same morning.
+
+**Indexation across 12 URLs checked:**
+
+| State | n | URLs |
+|---|---|---|
+| Submitted and indexed | 3 | `/`, `/universities/`, `/programs/` |
+| Crawled - currently not indexed | 1 | `/faq/` |
+| Discovered - currently not indexed | 5 | `/blog/`, `/financing/`, `/credits/`, `/universities/lovely-professional-university/`, `/universities/amity-university-online/` |
+| URL is unknown to Google | 3 | `/about/`, `/contact/`, `/blog/choosing-the-right-online-degree/` |
+
+**1 indexed -> 3 indexed in hours**, with 5 more queued. The two states are not the same problem:
+*Discovered* means Google has the URL from the sitemap and has not crawled it yet — a queue, resolves
+on its own. *Crawled - currently not indexed* means Google fetched the page and **declined** to index
+it. That is a quality judgement, and `/faq/` is the only page in it.
+
+**Performance is still `rowCount: 0`, and must be.** GSC's reporting window currently ends
+2026-08-19; the pages were indexed 2026-08-22. No data could exist yet. Earliest meaningful signal is
+roughly 2026-08-25. Do not read the zero as failure before then.
+
+**Checked and NOT a defect, so nobody re-opens it:** breadcrumb structured data on `/universities/`
+and `/programs/` returns `PASS` with `items: [{"name": "Unnamed item"}]`. The page's own JSON-LD
+carries `name: "Home"` and `name: "Programs"` correctly — "Unnamed item" is only how the Inspection
+API labels the rich-result group. No fix needed.
+
+**Next, in order:** (1) let the queue drain, re-inspect ~2026-08-25; (2) fix `/faq/` — Google
+crawled it and said no, which points at thin content; (3) external links, still the binding
+constraint on crawl budget and the one thing not yet moved.
+
+**Owner:** Pratham.
+
+### Addendum, same day (15:13 UTC) · CAPI delivers but Meta credits almost none of it
+
+**Delivery side keeps working.** Queue now `LeadSubmitted|sent = 126` (up from 113 five hours ago),
+`failed = 0`. The sweep is running and clearing continuously. Nothing to fix here.
+
+**Dataset `1049749924574681` is still `last_fired_time` / `server_last_fired_time` = epoch 0.** That
+is now **5 hours** after 126 events were accepted and **28 hours** after the first hand-delivered one.
+This is well past any reasonable Events Manager lag. The earlier "probably just lag" reading no
+longer holds.
+
+**Ad-level attribution, checked to test whether we were reading the wrong dial.** `act_278258370`
+(the personal account carrying the live CTWA traffic), `last_7d`:
+
+| Metric | Value |
+|---|---|
+| impressions | 878,651 |
+| amount_spent | ₹17,330.33 |
+| `onsite_conversion_lead_grouped` | **2** |
+| `lead` | **2** |
+| `cost_per_lead` | ₹8,665.17 |
+
+**126 LeadSubmitted events sent. Meta credits 2 leads.** The events are accepted at the API boundary
+(`events_received`, HTTP 200) and then appear essentially nowhere measurable. Note the CLI cannot see
+this account (system-user token, personal ad account) — this came through the `meta-ads` MCP, and
+`act_961766249917785` returned `{"data":[]}` for the same window, confirming the CTWA spend is all on
+the personal account.
+
+**Do not over-read this yet.** Three innocent explanations remain live: `business_messaging`
+conversions may not map to `lead` / `onsite_conversion_lead_grouped` at all and could surface only in
+the Events Manager UI or WhatsApp reporting; the `ctwa_clid` values on queued rows may reference
+conversations older than the 7-day attribution window; and those 2 may be native Meta-tracked leads
+unrelated to our CAPI feed. What is no longer defensible is calling CAPI proven.
+
+**The business point, which stands regardless of which explanation wins.** Meta believes this account
+produced **2 leads for ₹17,330** across 878k impressions. The CRM says 126 conversations reached
+Qualified. Whatever the attribution mechanism, **Meta's optimiser is currently training on a signal
+roughly two orders of magnitude understated** — which is precisely the failure CAPI was supposed to
+fix, and the reason the ₹8,665 cost-per-lead figure should not be used to judge the campaigns.
+
+**Next:** open Events Manager in the browser for dataset 1049749924574681 and look at the event
+list directly. The Graph API dataset fields are pixel-shaped and may simply not report
+business_messaging; the UI is the authority. If the UI also shows nothing 24h+ after delivery, this
+becomes a Meta support case, not a config problem.
+
+**Owner:** Pratham.
+
+### RESOLVED 2026-08-22 · CAPI is PROVEN. The Graph API dataset fields were the wrong dial all along.
+
+**Events Manager shows `LeadSubmitted` events in dataset `1049749924574681`.** That closes the
+question open since 2026-08-21. Hypothesis 1 from earlier today is confirmed: **`business_messaging`
+conversions do not populate the pixel-shaped Graph API fields.** Every "still epoch 0" reading was
+measuring something that structurally cannot report CTWA events.
+
+**Three independent confirmations of the same thing:**
+1. Events Manager UI shows the events; `last_fired_time` / `server_last_fired_time` /
+   `ads_get_dataset_stats` / `ads_get_dataset_quality` all show nothing.
+2. `ads_get_dataset_quality` returned only `{"web":[]}` — an empty *web* channel, because a CTWA
+   dataset has no web channel to report.
+3. **The dataset has no Diagnostics tab and no Event Match Quality tab.** Both are pixel/web
+   features. Their absence is itself the tell that this is not a pixel dataset.
+
+**The 60-vs-126 gap is a date-range artifact, not loss.** Events Manager buckets by `event_time`, not
+by delivery time. All 126 were *delivered* today, but their event_times span three days:
+
+| event_time date | count |
+|---|---|
+| 2026-08-20 | 28 |
+| 2026-08-21 | **64** |
+| 2026-08-22 | 34 |
+| **total** | **126** |
+
+The 60 observed matches the 2026-08-21 bucket (64) almost exactly — a single-day view. Setting the
+range to 2026-08-20 -> 2026-08-22 should surface all 126.
+
+**The other two IDs are empty for good reasons, and neither is a fault.** `1367623915234970`
+("WhatsApp Marketing Message Event Sharing") is for marketing-message events, which this system does
+not send. `1594261842053152` ("Skeure Ads Connector") is an **App ID, not a conversion dataset** — it
+was never going to hold events.
+
+**Still open, and now a much smaller question: attribution, not delivery.** Ad-level
+`onsite_conversion_lead_grouped` on `act_278258370` showed **2** for last_7d while the dataset holds
+60+. Delivery and processing are proven; how many of those events tie back to an in-window
+`ctwa_clid` is a separate matter. Do not re-open the delivery investigation for this.
+
+**What it unlocks, with a caveat that matters.** `LeadSubmitted` is now a usable optimisation event.
+But Meta's learning phase generally wants ~50 optimisation events **per ad set per week**, and 126
+across three days is an *account-wide* figure spread over multiple ad sets. Consolidating ad sets is
+likely a precondition for any single one exiting learning phase on this event.
+
+**Owner:** Pratham. The CAPI thread from 2026-08-21 is closed.
+
+### RESOLVED 2026-08-22 · The attribution "gap" is not a gap. CAPI works and is simply unused.
+
+**Attribution-window hypothesis: dead.** Measured the click-to-conversion gap directly across all 127
+sent `LeadSubmitted` rows, joining `meta_conversion_events` to `conversations.ad_referral_at`:
+
+- **127 of 127 have a referral timestamp.** None missing.
+- **Every gap is under one hour**, clustering at 0.00-0.20h. Events fire **10-25 minutes** after the
+  ad click.
+- `ad_referral_at` matches `created_at` to ~0.1s, confirming it is real captured data and not a
+  migration backfill artifact. `event_time` lands on clean `:00:03` / `:30:03` boundaries — the
+  stage-advance process stamping `now()`.
+
+Nothing is falling outside any attribution window. That line of investigation is closed.
+
+**The actual explanation: the campaigns were never asked to count these events.** All campaigns on
+`act_278258370` are `OUTCOME_ENGAGEMENT`, and their result indicator is
+`actions:onsite_conversion.messaging_conversation_started_7d`.
+
+| Campaign (last_7d) | Objective | Results | Cost/result | Spend |
+|---|---|---|---|---|
+| FB Ads - 01/07/2026 | OUTCOME_ENGAGEMENT | **365** conversations started | ₹38.24 | ₹13,959.21 |
+| Fb Ads -SK - 06/08/2026 | OUTCOME_ENGAGEMENT | **43** conversations started | ₹78.40 | ₹3,371.19 |
+
+So: **408 conversations started, ₹17,330 spent.** The CRM converted those into **127 qualified
+`LeadSubmitted`**. And `onsite_conversion_lead_grouped = 2` is a *native Meta lead-form metric* —
+the wrong dial yet again, the same class of error as the epoch-0 dataset fields. It was never
+measuring our CAPI events.
+
+**CAPI is working and doing nothing.** The events reach the dataset; no campaign optimises for or
+reports on them.
+
+**The numbers that actually matter, derived here for the first time:**
+- **~31% qualification rate** (127 qualified / 408 conversations)
+- **₹136 per QUALIFIED lead** (₹17,330 / 127) — versus ₹42.5 per raw conversation, and versus the
+  ₹8,665 the wrong metric implied. **₹136 is the real cost per qualified lead.**
+
+**The fix, and a correction to this morning's caution.** Move the active campaigns from
+`OUTCOME_ENGAGEMENT` to a leads objective optimising on the `LeadSubmitted` conversion event, so
+Meta optimises for *qualified* leads rather than *any* conversation. Earlier today this log warned
+that no ad set would clear Meta's ~50-events-per-ad-set-per-week learning threshold. **That was too
+pessimistic:** 127 events over ~3 days is roughly **300/week account-wide**, so two to four ad sets
+can each clear 50 comfortably. Consolidation helps but is not the blocker it was called.
+
+**Not done, and requires Pratham's explicit approval:** this is a live-campaign objective change on
+an account spending ~₹17k/week. Nothing was modified. Campaigns stay as they are until he says
+otherwise.
+
+**Owner:** Pratham.
+
+### 2026-08-22 · Mined 2,112 real student WhatsApp messages into an SEO content plan (zero credits)
+
+Instead of guessing keywords, extracted actual demand from the CRM. Pulled all `sender_type='customer'`
+messages with `content_text`, stripped ad-click boilerplate and greetings: **758 substantive, 748
+after filtering.** No DataForSEO credit spent — this is first-party demand data.
+
+**Topic demand (proven, by message frequency):**
+
+| Questions | Topic | Content action |
+|---|---|---|
+| 71 | **Fees / cost / EMI** | The #1 question by far. FAQ + a fees/financing hub. |
+| 47 | Admission process / documents | FAQ cluster: eligibility & documents recurs verbatim. |
+| 35 | MA / MSc / MCom (PG) | Program pages. |
+| 28 | Online vs Distance | One authoritative explainer — already a thin FAQ entry. |
+| 27 | BA / BCom / BBA (UG) | Program pages. |
+| 26 | Eligibility | FAQ; "10th 49%, 12th 50%" type gap-eligibility queries. |
+| 13 | MBA | Highest single-program demand — its own page. |
+
+**Named-program demand = individual page candidates** (each a low-competition long-tail URL with
+proven local demand): MBA (15), B.Ed/M.Ed (12), BCA/MCA (10), BA Psychology (7), BA LLB/LLB (7),
+MA History (4), MSc Fashion Design (3), MSc Economics (3), MSc Zoology (2).
+
+**Two findings that change strategy:**
+1. **Fees dominate everything (71 vs 47 next).** The site treats financing as a secondary page; the
+   audience treats it as THE question. Fees/EMI deserves top-level prominence, not a footer link.
+2. **~30 questions are written in Punjabi/Hinglish** ("Per semester kini fee and exam kithe hugye",
+   "mera gap bhut aa te university kithe aa"). The audience searches in Punjabi. Worth testing a few
+   Punjabi-language FAQ answers or a bilingual block — near-zero competition, exact audience match.
+
+**Current gap:** `/faq/` has 5 questions / 359 words against 748 real ones on file.
+
+**Next (all draft-first, no publish without review):** (1) expand `/faq/` to ~15 entries led by fees,
+eligibility, online-vs-distance, UGC validity; (2) draft dedicated pages for MBA and the top UG/PG
+programs; (3) surface fees/EMI as a primary nav item. Content lives in
+`website-v3/src/content/faqs/` (Markdown) and `src/app/` — additions inherit existing FAQPage schema.
+
+**Owner:** Pratham.
+
+### 2026-08-22 · FAQ expanded 5->15 and a dedicated Online MBA page drafted (built + verified, NOT deployed)
+
+Executed the content plan from the message-mining entry. All draft-only in `website-v3`; nothing
+committed, nothing deployed. Production Kuanli (port 3000) untouched — test server ran on 3111 and
+was stopped.
+
+**FAQ: 5 -> 15 entries**, every new one worded from real student WhatsApp questions:
+- financing: fees-how-much, fees-emi-installments (fees is the #1 asked topic, 71 messages)
+- general: eligibility-documents, eligibility-low-marks, admission-process, degree-validity-jobs,
+  which-programs-available, mba-online-distance, program-duration, exams-attendance-working
+- Fee answers deliberately give ranges + point to program pages/WhatsApp rather than quote exact
+  per-program figures that would drift. Recognition answers stay conditional ("when UGC-DEB
+  entitled"), consistent with the existing ugc-recognition entry.
+- **Reordered `faq/page.tsx`**: financing section now renders ABOVE general, and the FAQPage JSON-LD
+  emits financing-first, so fees lead both the page and the structured data. (User decision.)
+
+**New page `/programs/online-mba/`** targeting "online MBA Punjab"-class queries (15 messages, top
+single-program demand):
+- Derives all 10 MBA offerings and their fees from `getUniversities()` at build time — cannot drift
+  from source data. Reuses `FeeTable`, `PageHero`, `CtaBanner`, and the shared JSON-LD helpers.
+- Emits BreadcrumbList + ItemList + FAQPage structured data. 4 MBA-specific FAQs inline.
+- Added to `sitemap.ts` staticPaths.
+
+**Verified:** `tsc --noEmit` clean; `npm run build` green (27 static routes, was 26); rendered HTML
+confirmed to contain all 6 fee-bearing universities, both schema blocks, and real ₹ figures.
+
+**Next:** user reviews the drafts. On approval: commit + `npm run deploy:prod`, then submit the
+new URL for indexing in Search Console. Still open from earlier: GBP claim check, old GSC owner
+eviction (old TXT `ceERVsKO...` still live), OpenSEO project context, old hosted OpenSEO export.
+
+**Owner:** Pratham.
+
+### 2026-08-22 · DEPLOYED to production. FAQ (15) + Online MBA page live on education.skeure.com
+
+`npm run deploy:prod` succeeded. Worker `skeure-education-web`, version `b7187658-483a-41b4-bd5f-5b1f90cb04d2`,
+route `education.skeure.com/*`. Verified live: `/faq/` 200 (fees leading, new entries present),
+`/programs/online-mba/` 200 (real per-university fees rendering), `/sitemap.xml` 200 and now lists
+`/programs/online-mba/`.
+
+**Auth note for next time:** `wrangler login` OAuth hangs in this shell (localhost:8976 callback
+unreachable). The working path is the API token in
+`projects/manus/apps/gateway/.dev.vars.hyperdrive` (var `CLOUDFLARE_API_TOKEN`) — `set -a; . <file>`
+then `npm run deploy:prod`. **That token was rotated on 2026-08-22**; the value in
+[[finance-v2-deployment]] memory (id `0d28a69e...`) is stale as a value but the file+var path is
+current and verified valid/active this session. Never print the value.
+
+**Next (user):** in Search Console, Request Indexing on
+`https://education.skeure.com/programs/online-mba/` and re-submit sitemap ping if desired. The 10 new
+FAQ URLs are same-page (accordion), so only the MBA URL is a new indexable page.
+
+**Owner:** Pratham.
+
+### 2026-08-22 · DEPLOYED 6 program pages via dynamic route. education.skeure.com now 33 static routes.
+
+Built and shipped the program-page system. Version `253287b9-f1e9-4777-80dc-6f7491dc4e52`.
+
+**Architecture (user chose dynamic-route over hand-writing):** one file
+`src/app/programs/[slug]/page.tsx` + config `src/data/programs.config.ts`, driven by
+`generateStaticParams`. The standalone `/programs/online-mba/page.tsx` was deleted and migrated into
+this system, so there is one pattern, not two. Each page pulls its offerings + fees live from
+`getUniversities()` via an anchored regex on the course name (leading "Online " stripped), so fees
+never drift and no family cross-matches (verified BA excludes BBA/MBA, MA excludes MBA/MCA). Sitemap
+now generates program URLs from the same config.
+
+**Live (all 200, real fees, Breadcrumb+ItemList+FAQPage schema):**
+online-mba (8 offerings), online-ma (10), online-ba (6), online-bba (8), online-bca (6),
+online-mca (6), online-msc (2 — thin but valid).
+
+**Chosen from demand x supply:** built only families with real offerings AND fees. Excluded LLB
+(demand 9 but 0 offerings, and online LLB is not Bar-Council permitted) and B.Ed/M.Ed (demand 12 but
+0 offerings — user chose skip; add to config only once a university file carries the offering).
+
+**Next (user):** Request Indexing in Search Console on the 6 NEW URLs (online-mba was already
+submitted): /programs/online-ma/, /online-ba/, /online-msc/, /online-bba/, /online-bca/, /online-mca/.
+
+**Owner:** Pratham.
